@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+[data-theme='dark'] {
+  --border:       rgba(34,197,94,0.12);
+  --text-1:       #f0faf2;
+  --text-2:       rgba(240,250,242,0.5);
+  --text-3:       rgba(240,250,242,0.25);
+  --input-bg:     rgba(34,197,94,0.05);
+  --input-border: rgba(34,197,94,0.15);
+  --label:        rgba(34,197,94,0.45);
+  --social-bg:    rgba(255,255,255,0.04);
+  --social-border:rgba(34,197,94,0.1);
+  --divider:      rgba(34,197,94,0.1);
+  --link:         #22c55e;
+}
+[data-theme='light'] {
+  --border:       rgba(22,163,74,0.15);
+  --text-1:       #0c1f0e;
+  --text-2:       rgba(12,31,14,0.55);
+  --text-3:       rgba(12,31,14,0.3);
+  --input-bg:     rgba(22,163,74,0.04);
+  --input-border: rgba(22,163,74,0.2);
+  --label:        rgba(22,163,74,0.6);
+  --social-bg:    rgba(0,0,0,0.03);
+  --social-border:rgba(22,163,74,0.15);
+  --divider:      rgba(22,163,74,0.12);
+  --link:         #16a34a;
+}
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+@keyframes spin { to{transform:rotate(360deg)} }
+@keyframes float  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+@keyframes floatB { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+@keyframes bob    { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-6px) rotate(2deg)} }
+@keyframes slideMsg  { 0%{opacity:0;transform:translateX(-14px)} 10%,80%{opacity:1;transform:translateX(0)} 95%,100%{opacity:0;transform:translateX(10px)} }
+@keyframes slideMsgR { 0%{opacity:0;transform:translateX(14px)} 10%,80%{opacity:1;transform:translateX(0)} 95%,100%{opacity:0;transform:translateX(-10px)} }
+@keyframes cartBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+@keyframes appear  { 0%,40%{opacity:0} 50%,90%{opacity:1} 100%{opacity:0} }
+@keyframes blink   { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.auth-anim-1{animation:fadeUp .6s cubic-bezier(.22,1,.36,1) both;animation-delay:60ms}
+.auth-anim-2{animation:fadeUp .6s cubic-bezier(.22,1,.36,1) both;animation-delay:140ms}
+.auth-anim-3{animation:fadeUp .6s cubic-bezier(.22,1,.36,1) both;animation-delay:220ms}
+.auth-anim-4{animation:fadeUp .6s cubic-bezier(.22,1,.36,1) both;animation-delay:300ms}
+.auth-anim-5{animation:fadeUp .6s cubic-bezier(.22,1,.36,1) both;animation-delay:380ms}
+.auth-anim-6{animation:fadeUp .6s cubic-bezier(.22,1,.36,1) both;animation-delay:460ms}
+
+.auth-field{background:var(--input-bg);border:1px solid var(--input-border);color:var(--text-1);border-radius:10px;padding:11px 16px;font-size:14px;width:100%;font-family:'Outfit',sans-serif;transition:border-color .2s,background .2s}
+.auth-field::placeholder{color:var(--text-3)}
+.auth-field:focus{outline:none;border-color:#22c55e;background:rgba(34,197,94,0.07)}
+
+.auth-btn{background:#22c55e;color:#fff;font-weight:700;font-family:'Outfit',sans-serif;border:none;border-radius:10px;padding:12px;width:100%;font-size:14px;letter-spacing:.4px;cursor:pointer;transition:background .2s,transform .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.auth-btn:hover{background:#16a34a;transform:translateY(-1px)}
+.auth-btn:active{transform:translateY(0)}
+.auth-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+.auth-social{background:var(--social-bg);border:1px solid var(--social-border);color:var(--text-2);border-radius:10px;padding:11px;font-size:13px;font-family:'Outfit',sans-serif;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:background .2s,border-color .2s,color .2s;width:100%}
+.auth-social:hover{background:rgba(34,197,94,0.07);border-color:#22c55e;color:var(--text-1)}
+
+.auth-chk{display:none}
+.auth-chk-box{width:15px;height:15px;border:1.5px solid var(--input-border);border-radius:4px;background:var(--input-bg);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .18s}
+.auth-chk:checked+.auth-chk-box{background:#22c55e;border-color:#22c55e}
+.auth-chk:checked+.auth-chk-box::after{content:'';width:5px;height:8px;border:2px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translateY(-1px);display:block}
+
+.auth-spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:#22c55e;border-radius:4px}
+
+/* ── Signup wizard animations ── */
+@keyframes slideInF  { from{opacity:0;transform:translateX(50px) scale(0.97)}  to{opacity:1;transform:translateX(0) scale(1)} }
+@keyframes slideInB  { from{opacity:0;transform:translateX(-50px) scale(0.97)} to{opacity:1;transform:translateX(0) scale(1)} }
+@keyframes checkPop  { 0%{transform:scale(0) rotate(-15deg)} 60%{transform:scale(1.25) rotate(3deg)} 100%{transform:scale(1) rotate(0)} }
+@keyframes leftSlide { from{opacity:0;transform:translateX(-30px)} to{opacity:1;transform:translateX(0)} }
+@keyframes orb       { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-15px)} }
+
+/* ── Scene character animations ── */
+@keyframes dance1     { 0%,100%{transform:rotate(-8deg) translateY(0)}   25%{transform:rotate(8deg) translateY(-4px)}  50%{transform:rotate(-4deg) translateY(-8px)} 75%{transform:rotate(6deg) translateY(-3px)} }
+@keyframes dance2     { 0%,100%{transform:rotate(6deg) translateY(0)}    25%{transform:rotate(-6deg) translateY(-6px)} 50%{transform:rotate(4deg) translateY(-10px)} 75%{transform:rotate(-8deg) translateY(-4px)} }
+@keyframes wave       { 0%,100%{transform:rotate(0deg)}  25%{transform:rotate(-20deg)} 75%{transform:rotate(20deg)} }
+@keyframes legSwing   { 0%,100%{transform:rotate(0deg)}  50%{transform:rotate(15deg)} }
+@keyframes legSwing2  { 0%,100%{transform:rotate(0deg)}  50%{transform:rotate(-15deg)} }
+@keyframes moneyBounce{ 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-12px) rotate(5deg)} }
+@keyframes phonePulse { 0%,100%{transform:scale(1) rotate(-5deg)} 50%{transform:scale(1.1) rotate(5deg)} }
+@keyframes bob        { 0%,100%{transform:translateY(0) scaleX(1)} 50%{transform:translateY(-5px) scaleX(1.02)} }
+@keyframes cartBob    { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
+@keyframes blink      { 0%,100%{opacity:1} 50%{opacity:0.2} }
+@keyframes appear     { 0%,100%{opacity:0;transform:scale(0.9)} 30%,70%{opacity:1;transform:scale(1)} }
+@keyframes slideMsg   { 0%,100%{opacity:0;transform:translateY(10px)}  20%,80%{opacity:1;transform:translateY(0)} }
+@keyframes slideMsgR  { 0%,100%{opacity:0;transform:translateY(-10px)} 20%,80%{opacity:1;transform:translateY(0)} }
