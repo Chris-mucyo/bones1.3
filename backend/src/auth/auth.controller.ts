@@ -9,7 +9,7 @@ import { AuthenticatedRequest } from './types/auth.types';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Post('login')
   @ApiOperation({ summary: 'User login' })
@@ -30,7 +30,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid token' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  async refreshToken(@Req () req: AuthenticatedRequest) {
+  async refreshToken(@Req() req: AuthenticatedRequest) {
     const authHeaders = req.headers.authorization?.split(' ')[1];
     if (!authHeaders) {
       throw new UnauthorizedException('No token provided');
@@ -40,6 +40,13 @@ export class AuthController {
 
   }
 
-
+  @Post('validate')
+  @ApiOperation({ summary: 'Validate JWT token' })
+  @ApiResponse({ status: 200, description: 'Token is valid' })
+  @ApiResponse({ status: 401, description: 'Token is invalid' })
+  validateToken(@Body() body: { token: string }) {
+    const decoded = this.authService.validateToken(body.token);
+    return { valid: true, decoded };
+  }
 
 }
