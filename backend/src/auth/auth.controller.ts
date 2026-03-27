@@ -5,6 +5,9 @@ import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuthenticatedRequest } from './types/auth.types';
 
+
+@ApiTags('Authentication')
+@Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
@@ -19,5 +22,24 @@ export class AuthController {
     );
     return this.authService.login(user);
   }
+
+
+  @Post('Refresh')
+  @ApiOperation({ summary: 'Refresh access token' })
+  @ApiResponse({ status: 200, description: 'Token refreshed successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid token' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async refreshToken(@Req () req: AuthenticatedRequest) {
+    const authHeaders = req.headers.authorization?.split(' ')[1];
+    if (!authHeaders) {
+      throw new UnauthorizedException('No token provided');
+    }
+
+    return this.authService.refreshToken(authHeaders);
+
+  }
+
+
 
 }

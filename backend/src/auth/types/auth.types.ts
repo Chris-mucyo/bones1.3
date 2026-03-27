@@ -5,7 +5,7 @@ import { Role } from '../../../generated/prisma/enums';
 export interface UserProfile {
     id: number;
     email: string;
-    fullname: string;
+    fullName: string;
     avatarUrl?: string;
     shopname?: string;
     bio?: string;
@@ -16,9 +16,10 @@ export interface UserProfile {
 
 export interface JwtPayload {
   id: number;
-  username: string;
+  fullName: string;
   email: string;
   role: Role;
+  isActive: boolean;
 }
 
 export interface AuthenticatedRequest extends Request {
