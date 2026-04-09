@@ -1,10 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { FiAlertTriangle, FiSearch, FiUsers } from 'react-icons/fi';
 import ListingCard from './ListingCard';
 import type { Listing } from '../types';
 
-interface Props { category: string; search: string; isDark: boolean; }
+interface Props {
+  category: string;
+  search: string;
+  isDark: boolean;
+  badge?: string;
+  sort?: string;
+}
 
 function GridSkeleton({ isDark }: { isDark: boolean }) {
   const base   = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
@@ -51,7 +58,7 @@ interface ApiResponse {
   listings: Listing[];
 }
 
-export default function ListingGrid({ category, search, isDark }: Props) {
+export default function ListingGrid({ category, search, isDark, badge, sort }: Props) {
   const navigate = useNavigate();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading]   = useState(true);
@@ -65,6 +72,8 @@ export default function ListingGrid({ category, search, isDark }: Props) {
     const params: Record<string, string> = {};
     if (category && category !== 'All') params.category = category;
     if (search) params.search = search;
+    if (badge) params.badge = badge;
+    if (sort) params.sort = sort;
 
     axios
       .get<ApiResponse>('/api/listings', { params, signal: controller.signal })
@@ -89,7 +98,7 @@ export default function ListingGrid({ category, search, isDark }: Props) {
       .finally(() => setLoading(false));
 
     return () => controller.abort();
-  }, [category, search]);
+  }, [category, search, badge, sort]);
 
   if (loading) return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
@@ -98,15 +107,19 @@ export default function ListingGrid({ category, search, isDark }: Props) {
   );
 
   if (error) return (
-    <div style={{ textAlign: 'center', padding: '60px 0', color: 'rgba(255,255,255,0.3)' }}>
-      <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
+    <div style={{ textAlign: 'center', padding: '60px 0', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)' }}>
+      <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+        <FiAlertTriangle size={38} color={isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.45)'} />
+      </div>
       <p style={{ fontSize: 14 }}>{error}</p>
     </div>
   );
 
   if (!listings.length) return (
-    <div style={{ textAlign: 'center', padding: '60px 0', color: 'rgba(255,255,255,0.3)' }}>
-      <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
+    <div style={{ textAlign: 'center', padding: '60px 0', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)' }}>
+      <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+        <FiSearch size={38} color={isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.45)'} />
+      </div>
       <p style={{ fontSize: 14 }}>No listings found.</p>
     </div>
   );
@@ -115,7 +128,11 @@ export default function ListingGrid({ category, search, isDark }: Props) {
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
       {listings.map((listing, i) => (
         <div key={listing.id} onClick={() => navigate(`/listing/${listing.id}`)} style={{ cursor: 'pointer' }}>
-          <ListingCard listing={listing} isDark={isDark} index={i} />
+          <div style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6, color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)', fontSize: 10 }}>
+            <FiUsers size={11} color="#22c55e" />
+            Influencer-ready listing
+          </div>
+          <ListingCard listingId={listing.id} isDark={isDark} index={i} />
         </div>
       ))}
     </div>

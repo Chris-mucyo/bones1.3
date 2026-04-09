@@ -1,9 +1,39 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import {
+  FaMobileAlt,
+  FaTshirt,
+  FaHome,
+  FaPaintBrush,
+  FaUtensils,
+  FaLaptop,
+  FaClock,
+  FaGuitar,
+  FaBoxOpen,
+  FaShoePrints,
+  FaLeaf,
+  FaBook,
+  FaArrowRight,
+  FaBullhorn,
+} from 'react-icons/fa';
+import type { IconType } from 'react-icons';
 import type { Listing } from '../types';
 
-const EMOJIS = ['📱','👕','🏠','💄','🍔','💻','⌚','🎸','📦','👟','🌿','📚'];
+const TRENDING_ICONS: IconType[] = [
+  FaMobileAlt,
+  FaTshirt,
+  FaHome,
+  FaPaintBrush,
+  FaUtensils,
+  FaLaptop,
+  FaClock,
+  FaGuitar,
+  FaBoxOpen,
+  FaShoePrints,
+  FaLeaf,
+  FaBook,
+];
 
 function hashIndex(id: string, mod: number): number {
   let h = 0;
@@ -83,7 +113,7 @@ export default function TrendingSection({ isDark }: Props) {
       <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 10 }}>
         {listings.map((listing, i) => {
-          const emoji = EMOJIS[hashIndex(listing.id, EMOJIS.length)];
+          const ListingIcon = TRENDING_ICONS[hashIndex(listing.id, TRENDING_ICONS.length)];
 
           return (
             <div
@@ -103,8 +133,8 @@ export default function TrendingSection({ isDark }: Props) {
                 {String(i + 1).padStart(2, '0')}
               </span>
 
-              <div style={{ width: 56, height: 56, borderRadius: 8, flexShrink: 0, background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, border: `1px solid ${border}` }}>
-                {emoji}
+              <div style={{ width: 56, height: 56, borderRadius: 8, flexShrink: 0, background: isDark ? '#111' : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${border}` }}>
+                <ListingIcon size={22} color={isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.75)'} />
               </div>
 
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -114,14 +144,16 @@ export default function TrendingSection({ isDark }: Props) {
                 <p style={{ fontSize: 11, color: text2, marginBottom: 4 }}>
                   {listing.seller?.shopName ?? listing.seller?.name}
                 </p>
+                <p style={{ fontSize: 10, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <FaBullhorn size={9} color="#22c55e" />
+                  Creator influence boosts buyer traffic
+                </p>
                 <p style={{ fontSize: 14, fontWeight: 700, color: '#22c55e' }}>
                   {listing.currency} {listing.price.toLocaleString()}
                 </p>
               </div>
 
-              <svg width="16" height="16" fill="none" stroke={text2} strokeWidth="2" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
-                <path d="M9 18l6-6-6-6"/>
-              </svg>
+              <FaArrowRight size={14} color={text2} style={{ flexShrink: 0 }} />
             </div>
           );
         })}

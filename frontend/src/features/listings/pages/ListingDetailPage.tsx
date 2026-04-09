@@ -1,32 +1,22 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
   ThumbsUp, ThumbsDown, Share2, Bookmark, Flag,
-  MessageCircle, Star, ChevronLeft, MoreVertical,
-  MapPin, Eye, Send, Home, ShoppingBag, PlusSquare,
-  BarChart2, User, Settings, Search, Bell, Check,
-  Loader2, AlertCircle, RefreshCw, Phone,
+  MessageCircle, Star, Check,
+  MapPin, Eye,
+  AlertCircle, RefreshCw, Phone, ShieldCheck, Truck,
 } from 'lucide-react';
 import type { Listing } from '../../home/types';
+import AppLayout from '../../../shared/layouts/AppLayout';
+import { useTheme } from '../../../shared/components/ThemeProvider';
 
 // ── API SERVICE LAYER ─────────────────────────────────────
-// Replace BASE_URL with your actual backend when ready
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5000/api';
 
-interface Comment {
-  id: string;
-  userId: string;
-  user: string;
-  avatar: string;
-  text: string;
-  time: string;
-  likes: number;
-  liked: boolean;
-}
+const API_BASE = '/api';
 
 interface ListingDetail extends Listing {
   likesCount: number;
-  commentsCount: number;
   isLiked: boolean;
   isSaved: boolean;
 }
@@ -34,53 +24,34 @@ interface ListingDetail extends Listing {
 // ── Stubbed API calls — swap out fetch() bodies when backend is live ──
 const api = {
   getListing: async (id: string): Promise<ListingDetail> => {
-    // TODO: return fetch(`${BASE_URL}/listings/${id}`).then(r => r.json());
-    await new Promise(r => setTimeout(r, 600)); // simulate network
-    const { ALL_LISTINGS } = await import('../../home/data/listings');
-    const l = ALL_LISTINGS.find(x => x.id === id) ?? ALL_LISTINGS[0];
-    return { ...l, likesCount: l.savedCount * 4, commentsCount: 5, isLiked: false, isSaved: false };
+    const { data } = await axios.get<ListingDetail>(`${API_BASE}/listings/${id}`);
+    return {
+      ...data,
+      likesCount: data.likesCount ?? data.savedCount * 4,
+      isLiked: data.isLiked ?? false,
+      isSaved: data.isSaved ?? false,
+    };
   },
 
   getRelated: async (id: string, category: string): Promise<Listing[]> => {
-    // TODO: return fetch(`${BASE_URL}/listings?category=${category}&exclude=${id}&limit=12`).then(r => r.json());
-    await new Promise(r => setTimeout(r, 400));
-    const { ALL_LISTINGS } = await import('../../home/data/listings');
-    return ALL_LISTINGS.filter(l => l.id !== id);
+    const { data } = await axios.get<Listing[]>(`${API_BASE}/listings`, {
+      params: { exclude: id, category, limit: 12 },
+    });
+    return data;
   },
 
-  getComments: async (listingId: string): Promise<Comment[]> => {
-    // TODO: return fetch(`${BASE_URL}/listings/${listingId}/comments`).then(r => r.json());
-    await new Promise(r => setTimeout(r, 300));
-    return [
-      { id:'q1', userId:'u1', user:'Alice M.',  avatar:'A', text:'Is this still available? I am in Kacyiru.',              time:'1h ago',  likes:3,  liked:false },
-      { id:'q2', userId:'u2', user:'Jean P.',   avatar:'J', text:'What is the lowest you can go? I can offer 580,000.',   time:'3h ago',  likes:7,  liked:false },
-      { id:'q3', userId:'u3', user:'Grace U.',  avatar:'G', text:'Bought from this seller last month — smooth 👍',         time:'5h ago',  likes:12, liked:false },
-      { id:'q4', userId:'u4', user:'David K.',  avatar:'D', text:'Does it come with the original charger and earphones?', time:'1d ago',  likes:2,  liked:false },
-      { id:'q5', userId:'u5', user:'Fatuma R.', avatar:'F', text:'Can you deliver to Musanze? How much extra?',           time:'2d ago',  likes:1,  liked:false },
-    ];
-  },
-
-  postComment: async (listingId: string, text: string): Promise<Comment> => {
-    // TODO: return fetch(`${BASE_URL}/listings/${listingId}/comments`, { method:'POST', body: JSON.stringify({ text }), headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` }}).then(r => r.json());
-    await new Promise(r => setTimeout(r, 200));
-    return { id: `q_${Date.now()}`, userId: 'me', user: 'You', avatar: 'Y', text, time: 'Just now', likes: 0, liked: false };
-  },
-
-  toggleLike: async (listingId: string, liked: boolean): Promise<{ liked: boolean; likesCount: number }> => {
+  toggleLike: async (_listingId: string, liked: boolean): Promise<{ liked: boolean; likesCount: number }> => {
     // TODO: return fetch(`${BASE_URL}/listings/${listingId}/like`, { method: liked ? 'DELETE' : 'POST', headers:{ 'Authorization': `Bearer ${localStorage.getItem('token')}` }}).then(r => r.json());
     await new Promise(r => setTimeout(r, 150));
     return { liked: !liked, likesCount: 0 }; // count managed locally
   },
 
-  toggleSave: async (listingId: string, saved: boolean): Promise<{ saved: boolean }> => {
+  toggleSave: async (_listingId: string, saved: boolean): Promise<{ saved: boolean }> => {
     // TODO: return fetch(`${BASE_URL}/listings/${listingId}/save`, { method: saved ? 'DELETE' : 'POST', headers:{ 'Authorization': `Bearer ${localStorage.getItem('token')}` }}).then(r => r.json());
     await new Promise(r => setTimeout(r, 150));
     return { saved: !saved };
   },
 
-  toggleCommentLike: async (commentId: string, liked: boolean): Promise<void> => {
-    // TODO: fetch(`${BASE_URL}/comments/${commentId}/like`, { method: liked ? 'DELETE' : 'POST', headers:{ 'Authorization': `Bearer ${localStorage.getItem('token')}` }});
-  },
 };
 
 // ── Thumbnail ─────────────────────────────────────────────
@@ -109,57 +80,16 @@ function Thumb({ index }: { index: number }) {
   );
 }
 
-// ── Side nav (collapsed) ──────────────────────────────────
-const NAV = [
-  { Icon: Home,          label: 'Home',      to: '/home' },
-  { Icon: Search,        label: 'Search',    to: '/home' },
-  { Icon: ShoppingBag,   label: 'Shop',      to: '/home' },
-  { Icon: MessageCircle, label: 'Messages',  to: '/chat' },
-  { Icon: PlusSquare,    label: 'Post',      to: '/listings/new' },
-  { Icon: BarChart2,     label: 'Dashboard', to: '/seller/dashboard' },
-  { Icon: User,          label: 'Profile',   to: '/home' },
-];
-
-function SideNav() {
-  return (
-    <aside className="hidden md:flex flex-col items-center py-4 gap-1 bg-[#0a0a0a] border-r border-white/[0.07] flex-shrink-0" style={{ width: 64 }}>
-      <Link to="/home" className="no-underline mb-3" title="ShopHub">
-        <div className="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center hover:bg-green-400 transition-colors shadow-lg shadow-green-500/20">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5">
-            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <path d="M16 10a4 4 0 01-8 0"/>
-          </svg>
-        </div>
-      </Link>
-      {NAV.map(({ Icon, label, to }) => (
-        <Link key={label} to={to} title={label} className="no-underline w-full flex justify-center">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white/25 hover:bg-white/[0.06] hover:text-white/70 transition-all">
-            <Icon size={18} />
-          </div>
-        </Link>
-      ))}
-      <div className="mt-auto">
-        <Link to="/home" title="Settings" className="no-underline flex justify-center">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white/20 hover:bg-white/[0.06] hover:text-white/40 transition-all">
-            <Settings size={17} />
-          </div>
-        </Link>
-      </div>
-    </aside>
-  );
-}
-
 // ── Suggested card ────────────────────────────────────────
-function SuggestedCard({ listing, index }: { listing: Listing; index: number }) {
+function SuggestedCard({ listing, index, isDark }: { listing: Listing; index: number; isDark: boolean }) {
   const navigate = useNavigate();
   return (
     <div
       onClick={() => navigate(`/listing/${listing.id}`)}
-      className="flex gap-3 cursor-pointer group hover:bg-white/[0.04] rounded-xl p-2.5 transition-colors"
+      className={`flex gap-3 cursor-pointer group rounded-xl p-2.5 transition-colors ${isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-black/[0.04]'}`}
     >
       {/* Thumb — slightly taller for breathing room */}
-      <div className="relative flex-shrink-0 rounded-xl overflow-hidden bg-[#111]" style={{ width: 140, height: 80 }}>
+      <div className={`relative flex-shrink-0 rounded-xl overflow-hidden ${isDark ? 'bg-[#111]' : 'bg-neutral-200'}`} style={{ width: 140, height: 80 }}>
         <Thumb index={index} />
         {listing.badge && (
           <span className="absolute top-1.5 left-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded bg-green-500/90 text-black uppercase tracking-wide">
@@ -173,14 +103,14 @@ function SuggestedCard({ listing, index }: { listing: Listing; index: number }) 
 
       {/* Info */}
       <div className="flex-1 min-w-0 py-0.5">
-        <p className="text-[12.5px] font-semibold text-white/80 group-hover:text-white leading-snug line-clamp-2 mb-1.5 transition-colors">
+        <p className={`text-[12.5px] font-semibold leading-snug line-clamp-2 mb-1.5 transition-colors ${isDark ? 'text-white/80 group-hover:text-white' : 'text-black/85 group-hover:text-black'}`}>
           {listing.title}
         </p>
-        <p className="text-[11px] text-white/40 truncate mb-0.5">
-          {listing.seller.shopName ?? listing.seller.name}
-          {listing.seller.verified && <span className="ml-1 text-green-500">✓</span>}
+        <p className={`text-[11px] truncate mb-0.5 ${isDark ? 'text-white/40' : 'text-black/60'}`}>
+          {sellerDisplay}
+          {seller.verified && <span className="ml-1 text-green-500">✓</span>}
         </p>
-        <p className="text-[11px] text-white/20 flex items-center gap-1">
+        <p className={`text-[11px] flex items-center gap-1 ${isDark ? 'text-white/20' : 'text-black/50'}`}>
           <Eye size={9} />{listing.views.toLocaleString()} views · {listing.createdAt}
         </p>
       </div>
@@ -229,15 +159,14 @@ const BADGE_STYLE: Record<string, string> = {
 // ─────────────────────────────────────────────────────────
 export default function ListingDetailPage() {
   const { id }   = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   // ── Data state ───────────────────────────────────────
   const [listing,      setListing]      = useState<ListingDetail | null>(null);
   const [related,      setRelated]      = useState<Listing[]>([]);
-  const [comments,     setComments]     = useState<Comment[]>([]);
   const [loadingMain,  setLoadingMain]  = useState(true);
   const [loadingSide,  setLoadingSide]  = useState(true);
-  const [loadingCmts,  setLoadingCmts]  = useState(true);
   const [error,        setError]        = useState<string | null>(null);
 
   // ── UI state ─────────────────────────────────────────
@@ -245,8 +174,6 @@ export default function ListingDetailPage() {
   const [disliked,     setDisliked]     = useState(false);
   const [saved,        setSaved]        = useState(false);
   const [likesCount,   setLikesCount]   = useState(0);
-  const [comment,      setComment]      = useState('');
-  const [submitting,   setSubmitting]   = useState(false);
   const [activeTab,    setActiveTab]    = useState<'description'|'details'|'seller'>('description');
   const [showPhone,    setShowPhone]    = useState(false);
   const [shareToast,   setShareToast]   = useState(false);
@@ -276,25 +203,15 @@ export default function ListingDetailPage() {
     finally { setLoadingSide(false); }
   };
 
-  const fetchComments = async (listingId: string) => {
-    setLoadingCmts(true);
-    try {
-      const data = await api.getComments(listingId);
-      setComments(data);
-    } catch { /* silent */ }
-    finally { setLoadingCmts(false); }
-  };
-
   useEffect(() => {
     if (!id) return;
     // Reset UI
-    setListing(null); setRelated([]); setComments([]);
+    setListing(null); setRelated([]);
     setLiked(false); setDisliked(false); setSaved(false);
     setActiveTab('description'); setShowPhone(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     // Fetch all
     fetchListing(id);
-    fetchComments(id);
   }, [id]);
 
   useEffect(() => {
@@ -335,74 +252,28 @@ export default function ListingDetailPage() {
     setTimeout(() => setShareToast(false), 2500);
   };
 
-  const submitComment = async () => {
-    if (!comment.trim() || !listing || submitting) return;
-    setSubmitting(true);
-    try {
-      const newComment = await api.postComment(listing.id, comment);
-      setComments(prev => [newComment, ...prev]);
-      setComment('');
-    } catch { /* TODO: show error toast */ }
-    finally { setSubmitting(false); }
-  };
+  // ── idx for thumb color — FIXED: coerce id to string before .replace() ──
+  const idx = listing ? (parseInt(String(listing.id ?? '').replace(/\D/g,'') || '0') % 12) : 0;
 
-  const handleCommentLike = async (cid: string) => {
-    const c = comments.find(x => x.id === cid);
-    if (!c) return;
-    // Optimistic
-    setComments(prev => prev.map(x =>
-      x.id === cid ? { ...x, liked: !x.liked, likes: x.liked ? x.likes - 1 : x.likes + 1 } : x
-    ));
-    try {
-      await api.toggleCommentLike(cid, c.liked);
-    } catch {
-      setComments(prev => prev.map(x =>
-        x.id === cid ? { ...x, liked: c.liked, likes: c.likes } : x
-      ));
-    }
+  // ── Safe seller fallback — guards against undefined listing.seller ──
+  const seller = listing?.seller ?? {
+    id: '', name: '', shopName: '', verified: false,
+    rating: 0, totalSales: 0, avatar: '',
   };
+  const sellerDisplay = seller.shopName || seller.name || 'Unknown seller';
 
-  // ── idx for thumb color ──────────────────────────────
-  const idx = listing ? (parseInt(listing.id.replace(/\D/g,'')) || 0) % 12 : 0;
+  const pageTheme = isDark ? 'bg-black text-white' : 'bg-[#f7f9fc] text-black';
+  const mutedText = isDark ? 'text-white/40' : 'text-black/60';
+  const borderTone = isDark ? 'border-white/[0.07]' : 'border-black/10';
+  const tabIdle = isDark ? 'text-white/30 hover:text-white/60' : 'text-black/55 hover:text-black/80';
+  const cardTone = isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-black/[0.02] border-black/10';
+  const softButton = isDark
+    ? 'border-white/[0.1] bg-white/[0.04] text-white/50 hover:bg-white/[0.07] hover:text-white'
+    : 'border-black/10 bg-black/[0.03] text-black/70 hover:bg-black/[0.06] hover:text-black';
 
   return (
-    <div className="flex min-h-screen bg-black text-white overflow-x-hidden" style={{ fontFamily:"'Outfit',sans-serif" }}>
-
-      <SideNav />
-
-      <div className="flex-1 flex flex-col min-w-0">
-
-        {/* ── Topbar ── */}
-        <header className="sticky top-0 z-50 flex items-center gap-3 px-4 py-2.5 bg-black/95 backdrop-blur-xl border-b border-white/[0.07]">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-white/40 hover:text-white transition-colors flex-shrink-0">
-            <ChevronLeft size={20} />
-          </button>
-
-          {/* Logo */}
-          <Link to="/home" className="flex items-center gap-2 no-underline flex-shrink-0">
-            <div className="w-30 h-6 rounded-md flex items-center justify-center">
-              <img src="../src/assets/shophub-logo.svg" alt="" />
-            </div>
-          </Link>
-
-          {/* Search */}
-          <div className="flex-1 max-w-md hidden md:flex items-center bg-white/[0.05] border border-white/[0.07] hover:border-white/[0.12] rounded-full px-3.5 py-1.5 transition-colors">
-            <Search size={13} className="text-white/25 mr-2 flex-shrink-0" />
-            <input
-              placeholder="Search listings..."
-              className="flex-1 bg-transparent text-[13px] text-white placeholder:text-white/25 outline-none"
-            />
-          </div>
-
-          <div className="ml-auto flex items-center gap-1">
-            <button className="w-8 h-8 rounded-full flex items-center justify-center text-white/30 hover:bg-white/[0.06] hover:text-white transition-colors">
-              <Bell size={16} />
-            </button>
-            <button className="w-8 h-8 rounded-full flex items-center justify-center text-white/30 hover:bg-white/[0.06] hover:text-white transition-colors">
-              <MoreVertical size={16} />
-            </button>
-          </div>
-        </header>
+    <AppLayout>
+      <div className={`min-h-screen overflow-x-hidden ${pageTheme}`} style={{ fontFamily: "'Outfit',sans-serif" }}>
 
         {/* ── Share toast ── */}
         {shareToast && (
@@ -414,11 +285,11 @@ export default function ListingDetailPage() {
 
         {/* ── Error state ── */}
         {error && (
-          <div className="flex flex-col items-center justify-center py-24 gap-4 text-white/40">
+          <div className={`flex flex-col items-center justify-center py-24 gap-4 ${mutedText}`}>
             <AlertCircle size={40} className="text-red-400/60" />
             <p className="text-[14px]">{error}</p>
             <button onClick={() => fetchListing(id!)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/[0.1] hover:border-white/25 text-[13px] font-semibold transition-all">
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border ${borderTone} text-[13px] font-semibold transition-all ${isDark ? 'hover:border-white/25' : 'hover:border-black/30'}`}>
               <RefreshCw size={13} /> Try again
             </button>
           </div>
@@ -434,7 +305,7 @@ export default function ListingDetailPage() {
               {loadingMain ? <SkeletonMain /> : listing && (<>
 
                 {/* 16:9 product visual */}
-                <div className="relative w-full rounded-2xl overflow-hidden bg-[#0f0f0f] border border-white/[0.07]"
+                <div className={`relative w-full rounded-2xl overflow-hidden border ${isDark ? 'bg-[#0f0f0f] border-white/[0.07]' : 'bg-white border-black/10'}`}
                   style={{ paddingTop:'56.25%' }}>
                   {/* TODO: swap <Thumb> for <img src={listing.images[0]} className="absolute inset-0 w-full h-full object-cover" /> when images exist */}
                   <Thumb index={idx} />
@@ -444,130 +315,155 @@ export default function ListingDetailPage() {
                       {listing.badge}
                     </span>
                   )}
-                  <span className="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-lg bg-black/75 text-white/60 border border-white/[0.1] capitalize backdrop-blur-sm">
+                  <span className={`absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-lg capitalize backdrop-blur-sm ${isDark ? 'bg-black/75 text-white/60 border border-white/[0.1]' : 'bg-white/90 text-black/60 border border-black/10'}`}>
                     {listing.condition}
                   </span>
                   <div className="absolute bottom-4 right-4 bg-black/90 backdrop-blur-sm px-4 py-2 rounded-xl border border-green-500/25 shadow-xl">
                     <span className="text-[22px] font-black text-green-500">
-                      {listing.currency} {listing.price.toLocaleString()}
+                      {listing.currency} {listing.price?.toLocaleString() ?? '0'}
                     </span>
                   </div>
-                  <div className="absolute bottom-4 left-4 flex items-center gap-1.5 bg-black/70 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/[0.07]">
-                    <Eye size={11} className="text-white/40" />
-                    <span className="text-[11px] text-white/40 font-medium">{listing.views.toLocaleString()} views</span>
+                  <div className={`absolute bottom-4 left-4 flex items-center gap-1.5 backdrop-blur-sm px-3 py-1.5 rounded-lg border ${isDark ? 'bg-black/70 border-white/[0.07]' : 'bg-white/90 border-black/10'}`}>
+                    <Eye size={11} className={mutedText} />
+                    <span className={`text-[11px] font-medium ${mutedText}`}>{listing.views?.toLocaleString() ?? '0'} views</span>
                   </div>
                 </div>
 
                 {/* Title */}
-                <h1 className="text-[21px] md:text-[24px] font-bold text-white leading-tight mt-5 mb-2">
+                <h1 className="text-[21px] md:text-[24px] font-bold leading-tight mt-5 mb-2">
                   {listing.title}
                 </h1>
 
                 {/* Meta */}
-                <div className="flex items-center gap-3 text-[12px] text-white/30 flex-wrap mb-5">
+                <div className={`flex items-center gap-3 text-[12px] flex-wrap mb-5 ${mutedText}`}>
                   <span className="flex items-center gap-1"><MapPin size={11}/>{listing.location}</span>
                   <span>·</span>
-                  <span>{listing.createdAt}</span>
+                  <span>{listing.createdAt?.toLocaleString() ?? ''}</span>
                   <span>·</span>
-                  <span className="capitalize bg-white/[0.06] border border-white/[0.08] px-2.5 py-0.5 rounded-full">{listing.category}</span>
+                  <span className={`capitalize px-2.5 py-0.5 rounded-full border ${cardTone}`}>{listing.category}</span>
                 </div>
 
                 {/* ── Action bar ── */}
-                <div className="flex items-center justify-between py-3.5 border-y border-white/[0.07] mb-6 gap-2 flex-wrap">
+                <div className={`flex items-center justify-between py-3.5 border-y mb-6 gap-2 flex-wrap ${borderTone}`}>
                   <div className="flex items-center gap-2 flex-wrap">
 
                     {/* Like / Dislike */}
-                    <div className="flex items-center rounded-full border border-white/[0.1] bg-white/[0.04] overflow-hidden">
+                    <div className={`flex items-center rounded-full border overflow-hidden ${softButton}`}>
                       <button onClick={handleLike}
                         className={`flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold transition-all
-                          ${liked ? 'bg-green-500/15 text-green-500' : 'text-white/50 hover:bg-white/[0.06] hover:text-white'}`}>
+                          ${liked ? 'bg-green-500/15 text-green-500' : ''}`}>
                         <ThumbsUp size={14} fill={liked ? 'currentColor' : 'none'} />
                         <span>{likesCount.toLocaleString()}</span>
                       </button>
-                      <div className="w-px h-5 bg-white/[0.1]"/>
+                      <div className={`w-px h-5 ${isDark ? 'bg-white/[0.1]' : 'bg-black/10'}`}/>
                       <button
                         onClick={() => { setDisliked(d => !d); if (liked) { setLiked(false); setLikesCount(n => n - 1); }}}
-                        className={`px-3 py-2 transition-all ${disliked ? 'bg-red-500/10 text-red-400' : 'text-white/50 hover:bg-white/[0.06] hover:text-white'}`}>
+                        className={`px-3 py-2 transition-all ${disliked ? 'bg-red-500/10 text-red-400' : isDark ? 'text-white/50 hover:bg-white/[0.06] hover:text-white' : 'text-black/70 hover:bg-black/[0.06] hover:text-black'}`}>
                         <ThumbsDown size={14} fill={disliked ? 'currentColor' : 'none'} />
                       </button>
                     </div>
 
                     <button onClick={handleShare}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-white/[0.1] bg-white/[0.04] text-white/50 hover:bg-white/[0.07] hover:text-white text-[13px] font-semibold transition-all">
+                      className={`flex items-center gap-1.5 px-4 py-2 rounded-full border text-[13px] font-semibold transition-all ${softButton}`}>
                       <Share2 size={13}/> Share
                     </button>
 
                     <button onClick={handleSave}
                       className={`flex items-center gap-1.5 px-4 py-2 rounded-full border text-[13px] font-semibold transition-all
-                        ${saved ? 'border-green-500/40 bg-green-500/10 text-green-500' : 'border-white/[0.1] bg-white/[0.04] text-white/50 hover:bg-white/[0.07] hover:text-white'}`}>
+                        ${saved ? 'border-green-500/40 bg-green-500/10 text-green-500' : softButton}`}>
                       <Bookmark size={13} fill={saved ? 'currentColor' : 'none'} />
                       {saved ? 'Saved' : 'Save'}
                     </button>
 
                     {/* Chat seller — primary CTA */}
                     <Link
-                      to={`/chat?seller=${encodeURIComponent(listing.seller.shopName ?? listing.seller.name)}&item=${encodeURIComponent(listing.title)}&price=${listing.price}`}
+                      to={`/chat?seller=${encodeURIComponent(sellerDisplay)}&item=${encodeURIComponent(listing.title)}&price=${listing.price}`}
                       className="flex items-center gap-1.5 px-5 py-2 rounded-full bg-green-500 hover:bg-green-600 active:scale-95 text-black font-bold text-[13px] transition-all no-underline shadow-lg shadow-green-500/20">
                       <MessageCircle size={13}/> Chat seller
                     </Link>
                   </div>
 
-                  <button className="p-2 rounded-full text-white/25 hover:text-white/60 hover:bg-white/[0.06] transition-all">
+                  <button className={`p-2 rounded-full transition-all ${isDark ? 'text-white/25 hover:text-white/60 hover:bg-white/[0.06]' : 'text-black/40 hover:text-black/75 hover:bg-black/[0.06]'}`}>
                     <Flag size={14}/>
                   </button>
                 </div>
 
                 {/* ── Seller card ── */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-2xl border border-white/[0.08] bg-white/[0.02] mb-6">
+                <div className={`flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-2xl border mb-6 ${cardTone}`}>
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    {/* Avatar — TODO: swap for <img src={listing.seller.avatar} /> */}
+                    {/* Avatar — TODO: swap for <img src={seller.avatar} /> */}
                     <div className="w-12 h-12 rounded-full flex items-center justify-center text-base font-black text-black flex-shrink-0"
                       style={{ background:'linear-gradient(135deg,#22c55e,#16a34a)' }}>
-                      {listing.seller.name.charAt(0)}
+                      {String(seller.name ?? '').charAt(0)}
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                        <span className="text-[14px] font-bold text-white">{listing.seller.shopName ?? listing.seller.name}</span>
-                        {listing.seller.verified && (
+                        <span className="text-[14px] font-bold">{sellerDisplay}</span>
+                        {seller.verified && (
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="#22c55e">
                             <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
                           </svg>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 text-[11px] text-white/35">
+                      <div className={`flex items-center gap-2 text-[11px] ${isDark ? 'text-white/35' : 'text-black/60'}`}>
                         <span className="flex items-center gap-0.5">
                           {[...Array(5)].map((_,i) => (
-                            <Star key={i} size={9} fill={i < Math.floor(listing.seller.rating) ? '#22c55e' : 'none'}
-                              className={i < Math.floor(listing.seller.rating) ? 'text-green-500' : 'text-white/15'}/>
+                            <Star key={i} size={9} fill={i < Math.floor(seller.rating) ? '#22c55e' : 'none'}
+                              className={i < Math.floor(seller.rating) ? 'text-green-500' : isDark ? 'text-white/15' : 'text-black/20'}/>
                           ))}
-                          <span className="ml-1">{listing.seller.rating}</span>
+                          <span className="ml-1">{seller.rating}</span>
                         </span>
                         <span>·</span>
-                        <span>{listing.seller.totalSales.toLocaleString()} sales</span>
+                        <span>{seller.totalSales.toLocaleString()} sales</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex gap-2 flex-shrink-0">
                     <Link
-                      to={`/chat?seller=${encodeURIComponent(listing.seller.shopName ?? listing.seller.name)}&item=${encodeURIComponent(listing.title)}&price=${listing.price}`}
+                      to={`/chat?seller=${encodeURIComponent(sellerDisplay)}&item=${encodeURIComponent(listing.title)}&price=${listing.price}`}
                       className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-green-500 hover:bg-green-600 text-black font-bold text-[12px] transition-all no-underline">
                       <MessageCircle size={12}/> Chat
                     </Link>
                     <button onClick={() => setShowPhone(s => !s)}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-white/[0.12] bg-white/[0.04] hover:bg-white/[0.08] text-white/55 hover:text-white text-[12px] font-semibold transition-all">
+                      className={`flex items-center gap-1.5 px-4 py-2 rounded-full border text-[12px] font-semibold transition-all ${softButton}`}>
                       <Phone size={12}/>
                       {showPhone ? listing.location : 'Call'}
                     </button>
                   </div>
                 </div>
 
+                {/* ── Buyer confidence strip (enhanced) ── */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-7">
+                  <div className={`rounded-xl border p-3.5 flex items-start gap-2.5 ${cardTone}`}>
+                    <ShieldCheck size={16} className="text-green-500 mt-0.5" />
+                    <div>
+                      <p className="text-[12px] font-semibold">Verified seller signals</p>
+                      <p className={`text-[11px] mt-1 ${mutedText}`}>Seller profile, rating, and order history visible before you buy.</p>
+                    </div>
+                  </div>
+                  <div className={`rounded-xl border p-3.5 flex items-start gap-2.5 ${cardTone}`}>
+                    <Truck size={16} className="text-green-500 mt-0.5" />
+                    <div>
+                      <p className="text-[12px] font-semibold">Delivery coordination</p>
+                      <p className={`text-[11px] mt-1 ${mutedText}`}>Discuss pickup and delivery details directly in seller chat.</p>
+                    </div>
+                  </div>
+                  <div className={`rounded-xl border p-3.5 flex items-start gap-2.5 ${cardTone}`}>
+                    <Phone size={16} className="text-green-500 mt-0.5" />
+                    <div>
+                      <p className="text-[12px] font-semibold">Fast response path</p>
+                      <p className={`text-[11px] mt-1 ${mutedText}`}>Use chat first, then call when both sides are ready to close.</p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* ── Tabs ── */}
-                <div className="flex border-b border-white/[0.07] mb-5">
+                <div className={`flex border-b mb-5 ${borderTone}`}>
                   {(['description','details','seller'] as const).map(tab => (
                     <button key={tab} onClick={() => setActiveTab(tab)}
                       className={`px-5 py-2.5 text-[13px] font-semibold capitalize transition-all border-b-2 -mb-px
-                        ${activeTab === tab ? 'border-green-500 text-green-400' : 'border-transparent text-white/30 hover:text-white/60'}`}>
+                        ${activeTab === tab ? 'border-green-500 text-green-400' : `border-transparent ${tabIdle}`}`}>
                       {tab}
                     </button>
                   ))}
@@ -575,7 +471,7 @@ export default function ListingDetailPage() {
 
                 <div className="mb-10" style={{ animation:'fadeUp .3s ease both' }} key={activeTab}>
                   {activeTab === 'description' && (
-                    <p className="text-[14px] text-white/55 leading-relaxed">{listing.description || 'No description provided.'}</p>
+                    <p className={`text-[14px] leading-relaxed ${isDark ? 'text-white/55' : 'text-black/75'}`}>{listing.description || 'No description provided.'}</p>
                   )}
                   {activeTab === 'details' && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -587,92 +483,25 @@ export default function ListingDetailPage() {
                         ['Posted',    listing.createdAt],
                         ['Views',     listing.views.toLocaleString()],
                       ].map(([k,v]) => (
-                        <div key={k} className="p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                          <p className="text-[9px] text-white/20 uppercase tracking-widest mb-1.5 font-bold">{k}</p>
-                          <p className="text-[13px] font-semibold text-white capitalize">{v}</p>
+                        <div key={k} className={`p-3.5 rounded-xl border ${cardTone}`}>
+                          <p className={`text-[9px] uppercase tracking-widest mb-1.5 font-bold ${isDark ? 'text-white/20' : 'text-black/45'}`}>{k}</p>
+                          <p className="text-[13px] font-semibold capitalize">{v}</p>
                         </div>
                       ))}
                     </div>
                   )}
                   {activeTab === 'seller' && (
-                    <div className="rounded-2xl border border-white/[0.07] overflow-hidden">
+                    <div className={`rounded-2xl border overflow-hidden ${borderTone}`}>
                       {[
-                        ['Shop name',   listing.seller.shopName ?? listing.seller.name],
-                        ['Rating',      `${listing.seller.rating} / 5`],
-                        ['Total sales', listing.seller.totalSales.toLocaleString()],
-                        ['Verified',    listing.seller.verified ? '✓ Verified' : 'Not verified'],
-                        ['Seller ID',   listing.seller.id],
+                        ['Shop name',   sellerDisplay],
+                        ['Rating',      `${seller.rating} / 5`],
+                        ['Total sales', seller.totalSales.toLocaleString()],
+                        ['Verified',    seller.verified ? '✓ Verified' : 'Not verified'],
+                        ['Seller ID',   seller.id],
                       ].map(([k,v], i, arr) => (
-                        <div key={k} className={`flex justify-between items-center px-4 py-3.5 ${i < arr.length-1 ? 'border-b border-white/[0.05]' : ''}`}>
-                          <span className="text-[13px] text-white/35">{k}</span>
-                          <span className={`text-[13px] font-semibold ${k==='Verified'&&listing.seller.verified ? 'text-green-500' : 'text-white'}`}>{v}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* ── Comments ── */}
-                <div className="mb-12">
-                  <h2 className="text-[17px] font-bold text-white mb-5 flex items-center gap-2">
-                    <MessageCircle size={16} className="text-green-500"/>
-                    Questions & Reviews
-                    {!loadingCmts && <span className="text-[12px] font-normal text-white/25 ml-1">{comments.length}</span>}
-                  </h2>
-
-                  {/* Comment input */}
-                  <div className="flex gap-3 mb-7">
-                    <div className="w-9 h-9 rounded-full bg-green-500 flex items-center justify-center text-black font-black text-sm flex-shrink-0">Y</div>
-                    <div className="flex-1 flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] focus-within:border-green-500/40 rounded-2xl px-4 py-2.5 transition-colors">
-                      <input
-                        value={comment}
-                        onChange={e => setComment(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && !e.shiftKey && submitComment()}
-                        placeholder="Ask the seller a question..."
-                        className="flex-1 bg-transparent text-[13px] text-white placeholder:text-white/25 outline-none"
-                      />
-                      <button onClick={submitComment} disabled={!comment.trim() || submitting}
-                        className={`p-1.5 rounded-full transition-all flex-shrink-0 ${comment.trim() && !submitting ? 'text-green-500 hover:bg-green-500/10' : 'text-white/15'}`}>
-                        {submitting ? <Loader2 size={15} className="animate-spin"/> : <Send size={15}/>}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Comment list */}
-                  {loadingCmts ? (
-                    <div className="space-y-5 animate-pulse">
-                      {[...Array(3)].map((_,i) => (
-                        <div key={i} className="flex gap-3">
-                          <div className="w-9 h-9 rounded-full bg-white/[0.06] flex-shrink-0"/>
-                          <div className="flex-1 space-y-2 pt-1">
-                            <div className="h-3 bg-white/[0.06] rounded w-1/4"/>
-                            <div className="h-3 bg-white/[0.04] rounded w-full"/>
-                            <div className="h-3 bg-white/[0.04] rounded w-3/4"/>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="space-y-5">
-                      {comments.map(c => (
-                        <div key={c.id} className="flex gap-3">
-                          <div className="w-9 h-9 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-[12px] font-bold text-white/50 flex-shrink-0">
-                            {c.avatar}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-baseline gap-2 mb-1">
-                              <span className="text-[13px] font-bold text-white">{c.user}</span>
-                              <span className="text-[11px] text-white/20">{c.time}</span>
-                            </div>
-                            <p className="text-[13px] text-white/55 leading-relaxed mb-2">{c.text}</p>
-                            <div className="flex items-center gap-4">
-                              <button onClick={() => handleCommentLike(c.id)}
-                                className={`flex items-center gap-1.5 text-[11px] transition-colors ${c.liked ? 'text-green-500' : 'text-white/25 hover:text-white/60'}`}>
-                                <ThumbsUp size={11} fill={c.liked ? 'currentColor' : 'none'}/>{c.likes}
-                              </button>
-                              <button className="text-[11px] text-white/25 hover:text-white/55 transition-colors font-semibold">Reply</button>
-                            </div>
-                          </div>
+                        <div key={k} className={`flex justify-between items-center px-4 py-3.5 ${i < arr.length-1 ? `border-b ${isDark ? 'border-white/[0.05]' : 'border-black/10'}` : ''}`}>
+                          <span className={`text-[13px] ${isDark ? 'text-white/35' : 'text-black/60'}`}>{k}</span>
+                          <span className={`text-[13px] font-semibold ${k==='Verified'&&seller.verified ? 'text-green-500' : ''}`}>{v}</span>
                         </div>
                       ))}
                     </div>
@@ -683,17 +512,23 @@ export default function ListingDetailPage() {
             </div>
 
             {/* ════ RIGHT — suggested sidebar (wider, separated) ════ */}
-            <div className="w-full xl:w-[460px] 2xl:w-[500px] flex-shrink-0 xl:border-l border-t xl:border-t-0 border-white/[0.07]">
+            <div className={`w-full xl:w-[460px] 2xl:w-[500px] flex-shrink-0 xl:border-l border-t xl:border-t-0 ${borderTone}`}>
               {/* Sticky inner wrapper */}
-              <div className="xl:sticky xl:top-[57px] xl:max-h-[calc(100vh-57px)] xl:overflow-y-auto scrollbar-none px-5 py-6">
-                <h3 className="text-[11px] font-bold text-white/30 uppercase tracking-[2px] mb-4">Related Listings</h3>
+              <div className="xl:sticky xl:top-[72px] xl:max-h-[calc(100vh-72px)] xl:overflow-y-auto scrollbar-none px-5 py-6">
+                <h3 className={`text-[11px] font-bold uppercase tracking-[2px] mb-4 ${isDark ? 'text-white/30' : 'text-black/55'}`}>Related Listings</h3>
 
                 {loadingSide ? <SkeletonSidebar /> : (
                   <div className="flex flex-col gap-1">
                     {related.map((l) => {
-                      const relIdx = parseInt(l.id.replace(/\D/g,'')) % 12;
-                      return <SuggestedCard key={l.id} listing={l} index={relIdx} />;
+                      // FIXED: coerce id to string before .replace()
+                      const relIdx = parseInt(String(l.id ?? '').replace(/\D/g,'') || '0') % 12;
+                      return <SuggestedCard key={l.id} listing={l} index={relIdx} isDark={isDark} />;
                     })}
+                    {!related.length && (
+                      <div className={`rounded-xl border px-4 py-6 text-sm text-center ${cardTone} ${mutedText}`}>
+                        No related listings yet.
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -701,11 +536,10 @@ export default function ListingDetailPage() {
 
           </div>
         )}
-      </div>
-
       <style>{`
         @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
       `}</style>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

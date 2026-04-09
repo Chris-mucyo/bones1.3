@@ -9,11 +9,17 @@ import NotFoundPage       from '../features/auth/pages/NotFoundPage';
 import LandingPage        from '../features/auth/pages/LandingPage';
 
 const HomePage            = lazy(() => import('../features/home/pages/HomePage'));
+const TrendingPage        = lazy(() => import('../features/home/pages/TrendingPage'));
+const NearMePage          = lazy(() => import('../features/home/pages/NearMePage'));
+const TopSellersPage      = lazy(() => import('../features/home/pages/TopSellersPage'));
+const SavedPage           = lazy(() => import('../features/home/pages/SavedPage'));
 const ChatPage            = lazy(() => import('../features/chat/pages/ChatPage'));
 const ListingDetailPage   = lazy(() => import('../features/listings/pages/ListingDetailPage'));
 const CreateListingPage   = lazy(() => import('../features/listings/pages/CreateListingPage'));
+const ListingsPage        = lazy(() => import('../features/listings/pages/ListingsPage'));
 const ProfilePage         = lazy(() => import('../features/profile/pages/ProfilePage'));
 const AccountPage         = lazy(() => import('../features/profile/pages/AccountPage'));
+const SettingsPage        = lazy(() => import('../features/profile/pages/SettingsPage'));
 const BuyerDashboard      = lazy(() => import('../features/dashboard/pages/BuyerDashboard'));
 const SellerDashboard     = lazy(() => import('../features/dashboard/pages/SellerDashboard'));
 const WholesalerDashboard = lazy(() => import('../features/dashboard/pages/WholesalerDashboard'));
@@ -42,18 +48,23 @@ export default function Router() {
 
           {/* App */}
           <Route path="/home"                  element={<HomePage />} />
+          <Route path="/trending"              element={<TrendingPage />} />
+          <Route path="/near-me"               element={<NearMePage />} />
+          <Route path="/top-sellers"           element={<TopSellersPage />} />
+          <Route path="/saved"                 element={<SavedPage />} />
           <Route path="/chat"                  element={<ChatPage />} />
           <Route path="/chat/:id"              element={<ChatPage />} />
           <Route path="/explore"               element={<Explore />} />
 
           {/* Listing detail — /listing/lst_001 style */}
+          <Route path="/listings"              element={<ListingsPage />} />
           <Route path="/listing/:id"           element={<ListingDetailPage />} />
           <Route path="/listings/new"          element={<CreateListingPage />} />
 
           {/* Dashboards */}
           <Route path="/profile/:id"           element={<ProfilePage />} />
           <Route path="/account"               element={<AccountPage />} />
-          <Route path="/accounts"              element={<AccountPage />} />
+          <Route path="/settings"              element={<SettingsPage />} />
           <Route path="/buyer/dashboard"       element={<BuyerDashboard />} />
           <Route path="/seller/dashboard"      element={<SellerDashboard />} />
           <Route path="/wholesaler/dashboard"  element={<WholesalerDashboard />} />

@@ -1,8 +1,16 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
+import { useTheme } from '../../../shared/components/ThemeProvider';
+import type { IconType } from 'react-icons';
+import { FiSmartphone, FiShoppingBag, FiMonitor, FiDroplet, FiPackage, FiActivity, FiBookOpen, FiBox, FiMessageCircle, FiBarChart2, FiUserPlus, FiDollarSign } from 'react-icons/fi';
+import { MdStorefront, MdWarehouse } from 'react-icons/md';
+import { IoHomeOutline } from 'react-icons/io5';
+import { RiTShirt2Line } from 'react-icons/ri';
+import { BiRestaurant } from 'react-icons/bi';
+import { GiSofa } from 'react-icons/gi';
 
 // ── Particles canvas ──────────────────────────────────────
-function Particles() {
+function Particles({ isDark }: { isDark: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -32,7 +40,7 @@ function Particles() {
             ctx.beginPath();
             ctx.moveTo(pts[i].x, pts[i].y);
             ctx.lineTo(pts[j].x, pts[j].y);
-            ctx.strokeStyle = `rgba(34,197,94,${0.12 * (1 - dist / 130)})`;
+            ctx.strokeStyle = `rgba(0,0,0,${(isDark ? 0.18 : 0.12) * (1 - dist / 130)})`;
             ctx.lineWidth = 0.6;
             ctx.stroke();
           }
@@ -42,7 +50,7 @@ function Particles() {
       pts.forEach(p => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(34,197,94,0.45)';
+        ctx.fillStyle = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.35)';
         ctx.fill();
         p.x += p.vx; p.y += p.vy;
         if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
@@ -52,12 +60,12 @@ function Particles() {
     };
     draw();
     return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
-  }, []);
+  }, [isDark]);
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }} />;
 }
 
 // ── Animated counter ──────────────────────────────────────
-function Counter({ to, suffix = '' }: { to: number; suffix?: string }) {
+function Counter({ to, suffix = '', className = '' }: { to: number; suffix?: string; className?: string }) {
   const [val, setVal] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
@@ -74,23 +82,24 @@ function Counter({ to, suffix = '' }: { to: number; suffix?: string }) {
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, [to]);
-  return <span ref={ref}>{val.toLocaleString()}{suffix}</span>;
+  return <span ref={ref} className={className}>{val.toLocaleString()}{suffix}</span>;
 }
 
 // ── Floating product card ─────────────────────────────────
-function FloatingCard({ emoji, name, price, seller, badge, style }: {
-  emoji: string; name: string; price: string; seller: string; badge?: string; style?: React.CSSProperties;
+function FloatingCard({ Icon, name, price, seller, badge, style, isDark }: {
+  Icon: IconType; name: string; price: string; seller: string; badge?: string; style?: React.CSSProperties;
+  isDark: boolean;
 }) {
   return (
-    <div className="absolute bg-[#0d0d0d] border border-white/9 rounded-2xl p-3.5 shadow-2xl backdrop-blur-sm w-52"
+    <div className={`absolute rounded-2xl p-3.5 shadow-2xl backdrop-blur-sm w-52 ${isDark ? 'bg-[#0d0d0d] border border-white/9' : 'bg-white border border-black/12'}`}
       style={{ ...style, animation: 'floatCard 5s ease-in-out infinite' }}>
       <div className="flex items-center gap-2.5 mb-2.5">
         <div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/15 flex items-center justify-center text-xl shrink-0">
-          {emoji}
+          <Icon size={18} className="text-green-500" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[12px] font-bold text-white truncate">{name}</p>
-          <p className="text-[10px] text-white/35 truncate">{seller}</p>
+          <p className={`text-[12px] font-bold truncate ${isDark ? 'text-white' : 'text-black'}`}>{name}</p>
+          <p className={`text-[10px] truncate ${isDark ? 'text-white/35' : 'text-black/55'}`}>{seller}</p>
         </div>
       </div>
       <div className="flex items-center justify-between">
@@ -106,14 +115,14 @@ function FloatingCard({ emoji, name, price, seller, badge, style }: {
 }
 
 // ── Category pill ─────────────────────────────────────────
-function CategoryPill({ emoji, name, count }: { emoji: string; name: string; count: string }) {
+function CategoryPill({ Icon, name, count, isDark }: { Icon: IconType; name: string; count: string; isDark: boolean }) {
   return (
     <Link to="/login" className="no-underline group">
-      <div className="flex items-center gap-2.5 px-4 py-3 rounded-2xl border border-white/8 bg-white/3 hover:border-green-500/40 hover:bg-green-500/5 transition-all duration-200 cursor-pointer">
-        <span className="text-xl">{emoji}</span>
+      <div className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl border hover:border-green-500/40 hover:bg-green-500/5 transition-all duration-200 cursor-pointer ${isDark ? 'border-white/8 bg-white/3' : 'border-black/10 bg-black/[0.02]'}`}>
+        <span className="text-xl"><Icon size={18} className="text-green-500" /></span>
         <div>
-          <p className="text-[13px] font-semibold text-white group-hover:text-green-400 transition-colors">{name}</p>
-          <p className="text-[10px] text-white/30">{count} listings</p>
+          <p className={`text-[13px] font-semibold group-hover:text-green-400 transition-colors ${isDark ? 'text-white' : 'text-black'}`}>{name}</p>
+          <p className={`text-[10px] ${isDark ? 'text-white/30' : 'text-black/50'}`}>{count} listings</p>
         </div>
       </div>
     </Link>
@@ -121,30 +130,31 @@ function CategoryPill({ emoji, name, count }: { emoji: string; name: string; cou
 }
 
 // ── Feature ───────────────────────────────────────────────
-function Feature({ icon, title, desc, glow }: { icon: string; title: string; desc: string; glow?: boolean }) {
+function Feature({ Icon, title, desc, glow, isDark }: { Icon: IconType; title: string; desc: string; glow?: boolean; isDark: boolean }) {
   return (
     <div className={`group relative p-7 rounded-2xl border transition-all duration-300 cursor-default overflow-hidden
-      ${glow ? 'border-green-500/25 bg-green-500/4' : 'border-white/[0.07] bg-white/2 hover:border-green-500/25 hover:bg-green-500/3'}`}>
+      ${glow ? 'border-green-500/25 bg-green-500/4' : isDark ? 'border-white/[0.07] bg-white/2 hover:border-green-500/25 hover:bg-green-500/3' : 'border-black/10 bg-black/[0.02] hover:border-green-500/25 hover:bg-green-500/[0.05]'}`}>
       {glow && <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at top left, rgba(34,197,94,0.08) 0%, transparent 60%)' }} />}
       <div className="relative">
-        <div className="text-3xl mb-4">{icon}</div>
-        <h3 className="text-[16px] font-bold text-white mb-2.5">{title}</h3>
-        <p className="text-[13px] text-white/40 leading-relaxed">{desc}</p>
+        <div className="text-3xl mb-4"><Icon size={28} className="text-green-500" /></div>
+        <h3 className={`text-[16px] font-bold mb-2.5 ${isDark ? 'text-white' : 'text-black'}`}>{title}</h3>
+        <p className={`text-[13px] leading-relaxed ${isDark ? 'text-white/40' : 'text-black/60'}`}>{desc}</p>
       </div>
     </div>
   );
 }
 
 // ── Testimonial ───────────────────────────────────────────
-function Testimonial({ name, role, text, avatar, verified }: {
+function Testimonial({ name, role, text, avatar, verified, isDark }: {
   name: string; role: string; text: string; avatar: string; verified?: boolean;
+  isDark: boolean;
 }) {
   return (
-    <div className="p-6 rounded-2xl border border-white/[0.07] bg-white/2 hover:border-white/12 transition-all">
+    <div className={`p-6 rounded-2xl border transition-all ${isDark ? 'border-white/[0.07] bg-white/2 hover:border-white/12' : 'border-black/10 bg-black/[0.02] hover:border-black/20'}`}>
       <div className="flex gap-0.5 mb-4">
         {[...Array(5)].map((_, i) => <span key={i} className="text-green-500 text-[13px]">★</span>)}
       </div>
-      <p className="text-[14px] text-white/55 leading-relaxed mb-5">"{text}"</p>
+      <p className={`text-[14px] leading-relaxed mb-5 ${isDark ? 'text-white/55' : 'text-black/65'}`}>"{text}"</p>
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-full flex items-center justify-center text-[15px] font-black text-black shrink-0"
           style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
@@ -152,14 +162,14 @@ function Testimonial({ name, role, text, avatar, verified }: {
         </div>
         <div>
           <div className="flex items-center gap-1.5">
-            <p className="text-[13px] font-bold text-white">{name}</p>
+            <p className={`text-[13px] font-bold ${isDark ? 'text-white' : 'text-black'}`}>{name}</p>
             {verified && (
               <svg width="13" height="13" viewBox="0 0 24 24" fill="#22c55e">
                 <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
               </svg>
             )}
           </div>
-          <p className="text-[11px] text-white/30">{role}</p>
+          <p className={`text-[11px] ${isDark ? 'text-white/30' : 'text-black/50'}`}>{role}</p>
         </div>
       </div>
     </div>
@@ -168,6 +178,8 @@ function Testimonial({ name, role, text, avatar, verified }: {
 
 // ─────────────────────────────────────────────────────────
 export default function LandingPage() {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [scrolled, setScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
 
@@ -179,17 +191,17 @@ export default function LandingPage() {
 
   const tabs = ['Buyers', 'Sellers', 'Wholesalers'];
   const tabContent = [
-    { headline: 'Find anything in Rwanda', sub: 'Browse thousands of listings across electronics, fashion, food, and more. Chat directly with sellers and get the best deal.', cta: 'Start shopping', emoji: '🛍️' },
-    { headline: 'Grow your business online', sub: 'List products in minutes, reach buyers across the country, and manage your shop with real-time analytics.', cta: 'Open your shop', emoji: '🏪' },
-    { headline: 'Connect with bulk buyers', sub: 'List wholesale products, set minimum orders, and scale your distribution network across Rwanda effortlessly.', cta: 'Join wholesale hub', emoji: '🏭' },
+    { headline: 'Find anything in Rwanda', sub: 'Browse thousands of listings across electronics, fashion, food, and more. Chat directly with sellers and get the best deal.', cta: 'Start shopping', Icon: FiShoppingBag },
+    { headline: 'Grow your business online', sub: 'List products in minutes, reach buyers across the country, and manage your shop with real-time analytics.', cta: 'Open your shop', Icon: MdStorefront },
+    { headline: 'Connect with bulk buyers', sub: 'List wholesale products, set minimum orders, and scale your distribution network across Rwanda effortlessly.', cta: 'Join wholesale hub', Icon: MdWarehouse },
   ];
 
   return (
-    <div className="min-h-screen bg-[#030303] text-white overflow-x-hidden" style={{ fontFamily: "'Outfit', sans-serif" }}>
-      <Particles />
+    <div className={`landing-page ${isDark ? 'landing-dark bg-[#030303] text-white' : 'landing-light bg-[#f7f9fc] text-black'} min-h-screen overflow-x-hidden`} style={{ fontFamily: "'Outfit', sans-serif" }}>
+      <Particles isDark={isDark} />
 
       {/* ── Navbar ──────────────────────────────────────── */}
-      <nav className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 md:px-14 transition-all duration-300 ${scrolled ? 'py-3 bg-[#030303]/90 backdrop-blur-xl border-b border-white/6' : 'py-5'}`}
+      <nav className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 md:px-14 transition-all duration-300 ${scrolled ? `py-3 backdrop-blur-xl border-b ${isDark ? 'bg-[#030303]/90 border-white/6' : 'bg-[#f7f9fc]/95 border-black/10'}` : 'py-5'}`}
         style={{ zIndex: 100 }}>
         <Link to="/" className="flex items-center gap-2.5 no-underline">
           <img src="../src/assets/shophub-logo.svg" className=" w-40" />
@@ -282,19 +294,27 @@ export default function LandingPage() {
 
         {/* Floating product cards */}
         <div className="hidden lg:block absolute inset-0 pointer-events-none" style={{ zIndex: -1 }}>
-          <FloatingCard emoji="📱" name="Samsung Galaxy A55" price="RWF 650,000" seller="TechCity Kigali" badge="Verified"
+          <FloatingCard Icon={FiSmartphone} name="Samsung Galaxy A55" price="RWF 650,000" seller="TechCity Kigali" badge="Verified" isDark={isDark}
             style={{ top: '22%', left: '4%', animationDelay: '0s' }} />
-          <FloatingCard emoji="👗" name="Kitenge Dress Set" price="RWF 45,000" seller="Umuco Fashion" badge="New"
+          <FloatingCard Icon={RiTShirt2Line} name="Kitenge Dress Set" price="RWF 45,000" seller="Umuco Fashion" badge="New" isDark={isDark}
             style={{ top: '55%', left: '2%', animationDelay: '1.5s' }} />
-          <FloatingCard emoji="☕" name="Arabica Beans 1kg" price="RWF 12,000" seller="Rwanda Coffee Co." badge="Hot"
+          <FloatingCard Icon={FiDroplet} name="Arabica Beans 1kg" price="RWF 12,000" seller="Rwanda Coffee Co." badge="Hot" isDark={isDark}
             style={{ top: '25%', right: '4%', animationDelay: '0.7s' }} />
-          <FloatingCard emoji="🛋️" name="Agaseke Basket Set" price="RWF 35,000" seller="Ikirezi Crafts"
+          <FloatingCard Icon={GiSofa} name="Agaseke Basket Set" price="RWF 35,000" seller="Ikirezi Crafts" isDark={isDark}
             style={{ top: '58%', right: '2%', animationDelay: '2s' }} />
         </div>
       </section>
 
       {/* ── STATS ───────────────────────────────────────── */}
-      <section className="relative py-14 border-y border-white/6" style={{ zIndex: 1, background: 'linear-gradient(180deg, #030303 0%, #060f09 50%, #030303 100%)' }}>
+      <section
+        className={`relative py-14 border-y ${isDark ? 'border-white/6' : 'border-black/10'}`}
+        style={{
+          zIndex: 1,
+          background: isDark
+            ? 'linear-gradient(180deg, #030303 0%, #060f09 50%, #030303 100%)'
+            : 'linear-gradient(180deg, #f7f9fc 0%, #eef7f1 50%, #f7f9fc 100%)',
+        }}
+      >
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
             { n: 18400, s: '+', label: 'Active Listings' },
@@ -303,10 +323,10 @@ export default function LandingPage() {
             { n: 9200, s: '+', label: 'Daily Chats' },
           ].map(({ n, s, label }) => (
             <div key={label}>
-              <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-4xl md:text-5xl font-black text-green-500 mb-1.5">
-                <Counter to={n} suffix={s} />
+              <p style={{ fontFamily: "'Playfair Display', serif" }} className={`text-4xl md:text-5xl font-black mb-1.5 ${isDark ? 'text-green-500' : 'text-green-700'}`}>
+                <Counter to={n} suffix={s} className={isDark ? 'text-green-500' : 'text-green-700'} />
               </p>
-              <p className="text-[11px] text-white/30 font-semibold uppercase tracking-widest">{label}</p>
+              <p className={`text-[11px] font-semibold uppercase tracking-widest ${isDark ? 'text-white/30' : 'text-black/55'}`}>{label}</p>
             </div>
           ))}
         </div>
@@ -339,7 +359,12 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row items-center gap-12 md:gap-20" key={activeTab}
             style={{ animation: 'fadeUp .4s ease both' }}>
             <div className="flex-1 max-w-lg">
-              <div className="text-5xl mb-6">{tabContent[activeTab].emoji}</div>
+              <div className="text-5xl mb-6">
+                {(() => {
+                  const TabIcon = tabContent[activeTab].Icon;
+                  return <TabIcon size={44} className="text-green-500" />;
+                })()}
+              </div>
               <h3 style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl font-black text-white mb-4">
                 {tabContent[activeTab].headline}
               </h3>
@@ -359,7 +384,7 @@ export default function LandingPage() {
                     <div key={i} className="w-full flex items-center gap-3 bg-white/4 border border-white/[0.07] rounded-xl p-3"
                       style={{ animation: `fadeUp .4s ease ${i * 100}ms both` }}>
                       <div className="w-9 h-9 rounded-lg bg-green-500/10 border border-green-500/15 flex items-center justify-center text-lg shrink-0">
-                        {['📦', '💬', '📊'][i]}
+                        {[FiBox, FiMessageCircle, FiBarChart2].map((Icon, idx) => idx === i ? <Icon key={idx} size={17} className="text-green-500" /> : null)}
                       </div>
                       <div>
                         <p className="text-[12px] font-semibold text-white">{[
@@ -394,17 +419,17 @@ export default function LandingPage() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {[
-              { e: '📱', n: 'Electronics', c: '4,200' },
-              { e: '👗', n: 'Fashion', c: '3,800' },
-              { e: '🍔', n: 'Food & Drinks', c: '2,100' },
-              { e: '🛋️', n: 'Home & Living', c: '1,900' },
-              { e: '💻', n: 'Computers', c: '980' },
-              { e: '💄', n: 'Beauty', c: '1,450' },
-              { e: '🏭', n: 'Wholesale', c: '760' },
-              { e: '⚽', n: 'Sports', c: '620' },
-              { e: '🌿', n: 'Health', c: '850' },
-              { e: '📚', n: 'Books', c: '430' },
-            ].map(cat => <CategoryPill key={cat.n} emoji={cat.e} name={cat.n} count={cat.c} />)}
+              { i: FiSmartphone, n: 'Electronics', c: '4,200' },
+              { i: RiTShirt2Line, n: 'Fashion', c: '3,800' },
+              { i: BiRestaurant, n: 'Food & Drinks', c: '2,100' },
+              { i: GiSofa, n: 'Home & Living', c: '1,900' },
+              { i: FiMonitor, n: 'Computers', c: '980' },
+              { i: FiDroplet, n: 'Beauty', c: '1,450' },
+              { i: FiPackage, n: 'Wholesale', c: '760' },
+              { i: FiActivity, n: 'Sports', c: '620' },
+              { i: FiActivity, n: 'Health', c: '850' },
+              { i: FiBookOpen, n: 'Books', c: '430' },
+            ].map(cat => <CategoryPill key={cat.n} Icon={cat.i} name={cat.n} count={cat.c} isDark={isDark} />)}
           </div>
         </div>
       </section>
@@ -423,19 +448,19 @@ export default function LandingPage() {
           {/* Featured large card + 2 small */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="md:col-span-2">
-              <Feature glow icon="💬" title="Real-time Marketplace Chat"
-                desc="Don't just browse — negotiate. Message any seller directly from their listing. Discuss prices, ask about condition, arrange delivery — all inside ShopHub's built-in messenger that works like WhatsApp." />
+              <Feature glow Icon={FiMessageCircle} title="Real-time Marketplace Chat"
+                desc="Don't just browse — negotiate. Message any seller directly from their listing. Discuss prices, ask about condition, arrange delivery — all inside ShopHub's built-in messenger that works like WhatsApp." isDark={isDark} />
             </div>
-            <Feature icon="✅" title="Verified Seller Badges"
-              desc="Every seller is ID-verified. Know exactly who you're transacting with before you send a single franc." />
+            <Feature Icon={FiActivity} title="Verified Seller Badges"
+              desc="Every seller is ID-verified. Know exactly who you're transacting with before you send a single franc." isDark={isDark} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Feature icon="📍" title="Near Me Search"
-              desc="Find listings close to you — in your sector, district, or province. Local commerce made easy." />
-            <Feature icon="📊" title="Seller Analytics"
-              desc="See views, messages, and conversion data for every listing. Grow your shop with real data." />
-            <Feature icon="🏭" title="Wholesale Hub"
-              desc="Connect bulk buyers with large distributors. Set minimum order quantities and negotiate volume pricing." />
+            <Feature Icon={IoHomeOutline} title="Near Me Search"
+              desc="Find listings close to you — in your sector, district, or province. Local commerce made easy." isDark={isDark} />
+            <Feature Icon={FiBarChart2} title="Seller Analytics"
+              desc="See views, messages, and conversion data for every listing. Grow your shop with real data." isDark={isDark} />
+            <Feature Icon={FiPackage} title="Wholesale Hub"
+              desc="Connect bulk buyers with large distributors. Set minimum order quantities and negotiate volume pricing." isDark={isDark} />
           </div>
         </div>
       </section>
@@ -451,14 +476,14 @@ export default function LandingPage() {
             <div className="hidden md:block absolute top-10 left-[22%] right-[22%] h-px"
               style={{ background: 'linear-gradient(90deg, transparent, rgba(34,197,94,0.4), transparent)' }} />
             {[
-              { n: '01', i: '📝', t: 'Create account', d: 'Sign up in 60 seconds. Verify with your national ID to become a trusted seller.' },
-              { n: '02', i: '📦', t: 'List your product', d: 'Add photos, set price, choose category. Your listing is live instantly — no approval wait.' },
-              { n: '03', i: '💰', t: 'Make the sale', d: 'Buyers message you, you negotiate, you close the deal. Money moves, commerce works.' },
+              { n: '01', Icon: FiUserPlus, t: 'Create account', d: 'Sign up in 60 seconds. Verify with your national ID to become a trusted seller.' },
+              { n: '02', Icon: FiBox, t: 'List your product', d: 'Add photos, set price, choose category. Your listing is live instantly — no approval wait.' },
+              { n: '03', Icon: FiDollarSign, t: 'Make the sale', d: 'Buyers message you, you negotiate, you close the deal. Money moves, commerce works.' },
             ].map((s, i) => (
               <div key={i} className="flex flex-col items-center relative">
                 <div className="relative mb-6">
                   <div className="w-20 h-20 rounded-2xl bg-white/3 border border-white/8 flex items-center justify-center text-3xl">
-                    {s.i}
+                    <s.Icon size={28} className="text-green-500" />
                   </div>
                   <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-green-500 text-black text-[10px] font-black flex items-center justify-center shadow-lg shadow-green-500/30">
                     {i + 1}
@@ -482,11 +507,11 @@ export default function LandingPage() {
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <Testimonial avatar="A" name="Amina Uwase" role="Fashion Seller · Kigali" verified
+            <Testimonial avatar="A" name="Amina Uwase" role="Fashion Seller · Kigali" verified isDark={isDark}
               text="I listed my Kitenge collection and got 3 buyers within the first hour. The chat is incredible — I closed RWF 180,000 in sales on day one." />
-            <Testimonial avatar="J" name="Jean-Claude Nkusi" role="Electronics Wholesaler" verified
+            <Testimonial avatar="J" name="Jean-Claude Nkusi" role="Electronics Wholesaler" verified isDark={isDark}
               text="ShopHub's wholesale tier is exactly what I needed. My bulk listings reach serious buyers. Volume has grown 3x since joining." />
-            <Testimonial avatar="M" name="Marie Mukamana" role="Coffee Producer · Huye" verified
+            <Testimonial avatar="M" name="Marie Mukamana" role="Coffee Producer · Huye" verified isDark={isDark}
               text="Buyers from Kigali find my coffee now without me doing anything. ShopHub handles the discovery, I just need to grow my crop." />
           </div>
         </div>
@@ -563,6 +588,10 @@ export default function LandingPage() {
       <style>{`
         @keyframes fadeUp      { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
         @keyframes floatCard   { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-10px)} }
+        .landing-light [class*="text-white"] { color: #000 !important; }
+        .landing-light [class*="text-white/"] { color: #000 !important; opacity: 1 !important; }
+        .landing-light [class*="border-white"] { border-color: rgba(0,0,0,0.12) !important; }
+        .landing-light [class*="bg-white/"] { background-color: rgba(0,0,0,0.03) !important; }
       `}</style>
     </div>
   );

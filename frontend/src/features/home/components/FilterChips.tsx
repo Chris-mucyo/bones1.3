@@ -1,3 +1,5 @@
+import { FiCompass, FiTag } from 'react-icons/fi';
+
 interface Props {
   categories: string[];
   active:     string;
@@ -34,6 +36,7 @@ export default function FilterChips({ categories, active, onChange, isDark }: Pr
               transition: 'all .2s', fontFamily: "'Outfit', sans-serif",
             }}
           >
+            {cat === 'All' ? <FiCompass size={13} style={{ marginRight: 6 }} /> : <FiTag size={12} style={{ marginRight: 6 }} />}
             {cat}
           </button>
         );

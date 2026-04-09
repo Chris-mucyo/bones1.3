@@ -1,6 +1,26 @@
 // ListingCard.tsx
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import {
+  FaMobileAlt,
+  FaTshirt,
+  FaHome,
+  FaPaintBrush,
+  FaUtensils,
+  FaLaptop,
+  FaClock,
+  FaGuitar,
+  FaBoxOpen,
+  FaShoePrints,
+  FaLeaf,
+  FaBook,
+  FaStar,
+  FaMapMarkerAlt,
+  FaCommentDots,
+  FaExclamationTriangle,
+  FaCheckCircle,
+} from 'react-icons/fa';
+import type { IconType } from 'react-icons';
 import type { Listing } from '../types';
 
 interface Props {
@@ -15,7 +35,20 @@ const PALETTE = [
   ['#1a1a0a','#eab308'],['#0a1a1a','#06b6d4'],
 ] as const;
 
-const EMOJIS = ['📱','👕','🏠','💄','🍔','💻','⌚','🎸','📦','👟','🌿','📚'];
+const THUMB_ICONS: IconType[] = [
+  FaMobileAlt,
+  FaTshirt,
+  FaHome,
+  FaPaintBrush,
+  FaUtensils,
+  FaLaptop,
+  FaClock,
+  FaGuitar,
+  FaBoxOpen,
+  FaShoePrints,
+  FaLeaf,
+  FaBook,
+];
 
 function hashIndex(id: string | number, mod: number): number {
   const str = String(id);
@@ -68,18 +101,20 @@ function Skeleton({ isDark }: { isDark: boolean }) {
 
 function ListingThumb({ listingId }: { listingId: string | number }) {
   const pi = hashIndex(listingId, PALETTE.length);
-  const ei = hashIndex(listingId, EMOJIS.length);
+  const ii = hashIndex(listingId, THUMB_ICONS.length);
   const [bg, accent] = PALETTE[pi];
+  const Icon = THUMB_ICONS[ii];
   return (
-    <svg width="100%" height="100%" viewBox="0 0 320 230" style={{ position: 'absolute', inset: 0 }}>
-      <rect width="320" height="230" fill={bg} />
-      <circle cx="160" cy="100" r="55" fill={accent} opacity=".07" />
-      <rect x="110" y="60" width="100" height="80" rx="12" fill="none" stroke={accent} strokeWidth="1.5" opacity=".2" />
-      <circle cx="160" cy="100" r="28" fill={accent} opacity=".1" />
-      <text x="160" y="110" textAnchor="middle" fontSize="28" fill={accent} opacity=".5">
-        {EMOJIS[ei]}
-      </text>
-    </svg>
+    <div style={{ position: 'absolute', inset: 0, background: bg }}>
+      <svg width="100%" height="100%" viewBox="0 0 320 230" style={{ position: 'absolute', inset: 0 }}>
+        <circle cx="160" cy="100" r="55" fill={accent} opacity=".07" />
+        <rect x="110" y="60" width="100" height="80" rx="12" fill="none" stroke={accent} strokeWidth="1.5" opacity=".2" />
+        <circle cx="160" cy="100" r="28" fill={accent} opacity=".1" />
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Icon size={30} color={accent} style={{ opacity: 0.62 }} />
+      </div>
+    </div>
   );
 }
 
@@ -133,7 +168,7 @@ export default function ListingCard({ listingId, isDark, index }: Props) {
 
   if (error) return (
     <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 220, gap: 8 }}>
-      <span style={{ fontSize: 22 }}>⚠️</span>
+      <FaExclamationTriangle size={22} color={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.55)'} />
       <span style={{ fontSize: 11, color: text3, textAlign: 'center', padding: '0 16px' }}>{error}</span>
     </div>
   );
@@ -194,9 +229,7 @@ export default function ListingCard({ listingId, isDark, index }: Props) {
                 {listing.seller?.shopName ?? listing.seller?.name ?? '—'}
               </span>
               {listing.seller?.verified && (
-                <svg width="12" height="12" fill="#22c55e" viewBox="0 0 24 24">
-                  <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
-                </svg>
+                <FaCheckCircle size={12} color="#22c55e" />
               )}
             </div>
 
@@ -210,7 +243,7 @@ export default function ListingCard({ listingId, isDark, index }: Props) {
 
             {/* Rating */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ color: '#fbbf24', fontSize: 11 }}>★</span>
+              <FaStar size={11} color="#fbbf24" />
               <span style={{ fontSize: 11, color: text2 }}>
                 {listing.seller?.rating ?? '—'}
               </span>
@@ -230,10 +263,7 @@ export default function ListingCard({ listingId, isDark, index }: Props) {
             background: footerBg,
           }}>
             <span style={{ fontSize: 10, color: text3, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-                <circle cx="12" cy="10" r="3"/>
-              </svg>
+              <FaMapMarkerAlt size={10} />
               {listing.location ?? '—'}
             </span>
             <span style={{ fontSize: 10, color: text3 }}>
@@ -244,9 +274,7 @@ export default function ListingCard({ listingId, isDark, index }: Props) {
             <a href={`/chat?seller=${encodeURIComponent(listing.seller?.shopName ?? listing.seller?.name ?? '')}&item=${encodeURIComponent(listing.title ?? '')}&price=${listing.price ?? ''}`}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/[0.12] bg-transparent text-white/55 text-[11px] font-semibold hover:border-green-500 hover:text-green-500 transition-all no-underline"
             >
-              <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-              </svg>
+              <FaCommentDots size={11} />
               Chat
             </a>
           </div>

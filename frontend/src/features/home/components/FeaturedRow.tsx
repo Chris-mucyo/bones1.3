@@ -1,6 +1,21 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import {
+  FaMobileAlt,
+  FaTshirt,
+  FaHome,
+  FaPaintBrush,
+  FaUtensils,
+  FaLaptop,
+  FaClock,
+  FaGuitar,
+  FaBoxOpen,
+  FaShoePrints,
+  FaLeaf,
+  FaBook,
+} from 'react-icons/fa';
+import type { IconType } from 'react-icons';
 import type { Listing } from '../types';
 
 const PALETTE = [
@@ -9,7 +24,20 @@ const PALETTE = [
   ['#1a1a0a','#eab308'],['#0a1a1a','#06b6d4'],
 ] as const;
 
-const EMOJIS = ['📱','👕','🏠','💄','🍔','💻','⌚','🎸','📦','👟','🌿','📚'];
+const FEATURED_ICONS: IconType[] = [
+  FaMobileAlt,
+  FaTshirt,
+  FaHome,
+  FaPaintBrush,
+  FaUtensils,
+  FaLaptop,
+  FaClock,
+  FaGuitar,
+  FaBoxOpen,
+  FaShoePrints,
+  FaLeaf,
+  FaBook,
+];
 
 function hashIndex(id: string, mod: number) {
   let h = 0;
@@ -89,7 +117,7 @@ export default function FeaturedRow ({ isDark }: Props) {
       <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 6, scrollbarWidth: 'none' }}>
         {listings.map(listing => {
           const [bg, accent] = PALETTE[hashIndex(listing.id, PALETTE.length)];
-          const emoji        = EMOJIS[hashIndex(listing.id, EMOJIS.length)];
+          const ListingIcon  = FEATURED_ICONS[hashIndex(listing.id, FEATURED_ICONS.length)];
 
           return (
             <div
@@ -111,8 +139,10 @@ export default function FeaturedRow ({ isDark }: Props) {
                 <svg width="100%" height="100%" viewBox="0 0 160 120" style={{ position: 'absolute', inset: 0 }}>
                   <rect width="160" height="120" fill={bg} />
                   <circle cx="80" cy="55" r="40" fill={accent} opacity=".08" />
-                  <text x="80" y="64" textAnchor="middle" fontSize="32" fill={accent} opacity=".55">{emoji}</text>
                 </svg>
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ListingIcon size={28} color={accent} style={{ opacity: 0.65 }} />
+                </div>
                 {listing.badge && (
                   <span style={{
                     position: 'absolute', top: 6, right: 6,
@@ -131,6 +161,9 @@ export default function FeaturedRow ({ isDark }: Props) {
                   display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
                 }}>
                   {listing.title}
+                </p>
+                <p style={{ fontSize: 10, color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.55)', marginBottom: 5 }}>
+                  {listing.seller?.shopName ?? listing.seller?.name}
                 </p>
                 <p style={{ fontSize: 14, fontWeight: 700, color: '#22c55e' }}>
                   {listing.currency} {listing.price.toLocaleString()}
