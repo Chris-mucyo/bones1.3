@@ -13,6 +13,7 @@ const ChatPage            = lazy(() => import('../features/chat/pages/ChatPage')
 const ListingDetailPage   = lazy(() => import('../features/listings/pages/ListingDetailPage'));
 const CreateListingPage   = lazy(() => import('../features/listings/pages/CreateListingPage'));
 const ProfilePage         = lazy(() => import('../features/profile/pages/ProfilePage'));
+const AccountPage         = lazy(() => import('../features/profile/pages/AccountPage'));
 const BuyerDashboard      = lazy(() => import('../features/dashboard/pages/BuyerDashboard'));
 const SellerDashboard     = lazy(() => import('../features/dashboard/pages/SellerDashboard'));
 const WholesalerDashboard = lazy(() => import('../features/dashboard/pages/WholesalerDashboard'));
@@ -51,6 +52,8 @@ export default function Router() {
 
           {/* Dashboards */}
           <Route path="/profile/:id"           element={<ProfilePage />} />
+          <Route path="/account"               element={<AccountPage />} />
+          <Route path="/accounts"              element={<AccountPage />} />
           <Route path="/buyer/dashboard"       element={<BuyerDashboard />} />
           <Route path="/seller/dashboard"      element={<SellerDashboard />} />
           <Route path="/wholesaler/dashboard"  element={<WholesalerDashboard />} />
