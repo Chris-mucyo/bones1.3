@@ -7,6 +7,7 @@ import OAuthSuccess       from '../features/auth/pages/OAuthSuccess';
 import ForgotPasswordPage from '../features/auth/pages/ForgotPasswordPage';
 import NotFoundPage       from '../features/auth/pages/NotFoundPage';
 import LandingPage        from '../features/auth/pages/LandingPage';
+import VerifyEmail        from '../features/auth/components/verifyEmail';
 
 const HomePage            = lazy(() => import('../features/home/pages/HomePage'));
 const TrendingPage        = lazy(() => import('../features/home/pages/TrendingPage'));
@@ -25,16 +26,10 @@ const SellerDashboard     = lazy(() => import('../features/dashboard/pages/Selle
 const WholesalerDashboard = lazy(() => import('../features/dashboard/pages/WholesalerDashboard'));
 const Explore  = lazy(() => import('../features/home/pages/SearchPage'));
 
-const Spinner = () => (
-  <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#000' }}>
-    <div style={{ width:32, height:32, borderRadius:'50%', border:'3px solid rgba(34,197,94,0.2)', borderTopColor:'#22c55e', animation:'spin 0.7s linear infinite' }} />
-  </div>
-);
-
 export default function Router() {
   return (
     <BrowserRouter>
-      <Suspense fallback={<Spinner />}>
+      <Suspense fallback={null}>
         <Routes>
           {/* Landing */}
           <Route path="/"                      element={<LandingPage />} />
@@ -45,6 +40,7 @@ export default function Router() {
           <Route path="/forgot-password"       element={<ForgotPasswordPage />} />
           <Route path="/reset-password"        element={<ForgotPasswordPage />} />
           <Route path="/oauth/success"         element={<OAuthSuccess />} />
+          <Route path="/verify-email"          element={<VerifyEmail />} />
 
           {/* App */}
           <Route path="/home"                  element={<HomePage />} />

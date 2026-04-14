@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -10,6 +5,39 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id                Int       @id @default(autoincrement())
+  fullName          String
+  email             String    @unique
+  role              Role
+  shopName          String?
+  nationalId        String?
+  shopDescription   String?
+  shopAddress       String?
+  productTypes      String[]
+  experience        String?
+  interests         String[]
+  shoppingFrequency String?
+  budget            String?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  provider          Provider  @default(LOCAL)
+  providerId        String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  avatarUrl         String?
+  bio               String?
+  isActive          Boolean   @default(false)
+  passwordHash      String?
+  phoneNumber       String?
+  refreshToken      String?   @map("refresh_token")
+  isEmailVerified           Boolean  @default(false)
+  emailVerificationToken    String?  @unique
+  emailVerificationTokenExpiry DateTime?
+
+  @@index([provider, providerId])
 }
 
 enum Role {
@@ -22,44 +50,4 @@ enum Role {
 enum Provider {
   LOCAL
   GOOGLE
-}
-
-model User {
-  id        Int  @id @default(autoincrement())
-  fullName  String
-  email     String @unique
-  passwordHash  String?
-
-  role      Role
-
-  avatar    String?
-  shopName  String?
-  nationalId String?
-  phone     String?
-
-  // -- Seller/Wholesaler fields --
-  shopDescription String?
-  shopAddress     String?
-  productTypes     String[]
-  experience     String?
-
-  // -- buyer fields --
-  interests String[]
-  shoppingFrequency String?
-  budget     String?
-
-  //--password reset fields--
-  resetToken String?
-  resetTokenExpiry DateTime?
-
-  provider   Provider @default(LOCAL)
-  providerId String?
-  isActive Boolean  @default(false)
-
-  refreshToken  String?  @map("refresh_token")
-
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@index([provider, providerId])
 }

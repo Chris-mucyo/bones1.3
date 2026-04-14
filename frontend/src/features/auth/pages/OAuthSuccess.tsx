@@ -20,7 +20,7 @@ export default function OAuthSuccess() {
     try {
       const user = JSON.parse(decodeURIComponent(userRaw));
       authService.saveUser({ ...user, token: accessToken, refreshToken }, true);
-      navigate(`/${user.role}/dashboard`);
+      navigate(`/home`);
     } catch {
       navigate('/login?error=oauth_failed');
     }

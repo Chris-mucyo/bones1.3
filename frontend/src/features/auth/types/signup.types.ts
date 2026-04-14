@@ -1,65 +1,81 @@
-export type UserRole = 'buyer' | 'seller' | 'wholesaler';
+export type UserRole = 'BUYER' | 'SELLER' | 'WHOLESALER';
 
-export interface SignupFormData {
-  // Step 1 — Account
-  fullName:        string;
-  email:           string;
-  password:        string;
+export interface SignupForm {
+  // Step 1
+  fullName: string;
+  email: string;
+  password: string;
   confirmPassword: string;
-  terms:           boolean;
+  terms: boolean;
 
-  // Step 2 — Personalise
-  role:              UserRole | '';
+  // Step 2
+  role: UserRole | '';
   shoppingFrequency: string;
-  budgetRange:       string;
-  experienceLevel:   string;
-  productType:       string;
+  budget: string;
+  experienceLevel: string;
+  productType: string;
 
-  // Step 3 — Shop / Interests
-  shopName:   string;
-  nationalId: string;        // seller/wholesaler — used to look up TIN via RRA
+  // Step 3 - seller/wholesaler extras
+  shopName: string;
+  nationalId: string;
+  shopDescription: string;
+  shopAddress: string;
+  productTypes: string[];
   categories: string[];
-  interests:  string[];
 
-  // Step 4 — Profile photo
-  profileImage:   File | null;
+  // Step 3 - buyer
+  interests: string[];
+
+  // Step 4
+  profileImage: File | null;
   profilePreview: string | null;
 }
 
-export type StepErrors = Partial<Record<keyof SignupFormData, string>>;
-
-export interface WizardStep {
-  id:    number;
-  label: string;
-}
-
-export const WIZARD_STEPS: WizardStep[] = [
-  { id: 1, label: 'Account'   },
-  { id: 2, label: 'About You' },
-  { id: 3, label: 'Setup'     },
-  { id: 4, label: 'Photo'     },
-  { id: 5, label: 'Review'    },
-];
-
-export const CATEGORY_DATA = [
-  { name: 'Fashion & Apparel',      icon: '👕' },
-  { name: 'Electronics',            icon: '📱' },
-  { name: 'Home & Living',          icon: '🏠' },
-  { name: 'Beauty & Personal Care', icon: '💄' },
-  { name: 'Food & Beverages',       icon: '🍔' },
-  { name: 'Health & Wellness',      icon: '🧘' },
-  { name: 'Phones & Accessories',   icon: '📲' },
-  { name: 'Computers & Office',     icon: '💻' },
-  { name: 'Books & Stationery',     icon: '📚' },
-  { name: 'Music & Instruments',    icon: '🎸' },
-  { name: 'Sports & Outdoors',      icon: '⚽' },
-  { name: 'Wholesale & Bulk',       icon: '📦' },
-];
-
-export const INITIAL_FORM: SignupFormData = {
-  fullName: '', email: '', password: '', confirmPassword: '', terms: false,
-  role: '', shoppingFrequency: '', budgetRange: '',
-  experienceLevel: '', productType: '',
-  shopName: '', nationalId: '', categories: [], interests: [],
-  profileImage: null, profilePreview: null,
+export const INITIAL_FORM: SignupForm = {
+  fullName: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+  terms: false,
+  role: '',
+  shoppingFrequency: '',
+  budget: '',
+  experienceLevel: '',
+  productType: '',
+  shopName: '',
+  nationalId: '',
+  shopDescription: '',
+  shopAddress: '',
+  productTypes: [],
+  categories: [],
+  interests: [],
+  profileImage: null,
+  profilePreview: null,
 };
+
+export const WIZARD_STEPS = [
+  { id: 1, label: 'Account' },
+  { id: 2, label: 'Role'    },
+  { id: 3, label: 'Setup'   },
+  { id: 4, label: 'Photo'   },
+  { id: 5, label: 'Review'  },
+];
+
+export const CATEGORY_DATA: { name: string; icon: string }[] = [
+  { name: 'Electronics',       icon: '📱' },
+  { name: 'Fashion',           icon: '👗' },
+  { name: 'Food & Beverages',  icon: '🍔' },
+  { name: 'Home & Garden',     icon: '🏡' },
+  { name: 'Sports',            icon: '⚽' },
+  { name: 'Beauty',            icon: '💄' },
+  { name: 'Automotive',        icon: '🚗' },
+  { name: 'Books',             icon: '📚' },
+  { name: 'Toys',              icon: '🧸' },
+  { name: 'Health',            icon: '💊' },
+  { name: 'Music',             icon: '🎵' },
+  { name: 'Art & Crafts',      icon: '🎨' },
+  { name: 'Jewelry',           icon: '💍' },
+  { name: 'Office Supplies',   icon: '🖊️' },
+  { name: 'Agriculture',       icon: '🌱' },
+  { name: 'Construction',      icon: '🏗️' },
+];

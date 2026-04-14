@@ -48,6 +48,12 @@ export default function ListingsPage() {
     return 'All Listings';
   }, [queryBadge, queryCategory, querySort]);
 
+  const loaderStyle = useMemo<'youtube' | 'instagram' | 'ecommerce'>(() => {
+    if (querySort === 'popular') return 'youtube';
+    if (queryBadge === 'featured' || queryBadge === 'hot') return 'instagram';
+    return 'ecommerce';
+  }, [querySort, queryBadge]);
+
   return (
     <AppLayout>
       <FilterChips
@@ -95,6 +101,7 @@ export default function ListingsPage() {
             search={querySearch}
             badge={queryBadge}
             sort={querySort}
+            loaderStyle={loaderStyle}
             isDark={isDark}
           />
         </div>

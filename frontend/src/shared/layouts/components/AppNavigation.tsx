@@ -51,7 +51,6 @@ export default function AppNavigation({
   viewport,
   onToggleCollapse,
 }: AppNavigationProps) {
-  const showTopNav = activePath.startsWith('/home');
   const stroke = (active: boolean) => (active ? theme.green : theme.text2);
 
   const mkIcon = (d: string | ReactNode, active: boolean, extra?: ReactNode) => (
@@ -137,133 +136,39 @@ export default function AppNavigation({
       </div>
     ) : null;
 
-  const TopbarIconBtn = ({ href, badge, children: icon }: { href?: string; badge?: number; children: ReactNode }) => {
-    const style: React.CSSProperties = {
-      width: 36,
-      height: 36,
-      borderRadius: '50%',
-      border: 'none',
-      background: 'transparent',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: theme.text2,
-      position: 'relative',
-      textDecoration: 'none',
-      flexShrink: 0,
-      transition: 'background .15s',
-    };
-    const inner = (
-      <>
-        {icon}
-        {badge !== undefined && badge > 0 && (
-          <span style={{ position: 'absolute', top: 5, right: 5, minWidth: 14, height: 14, borderRadius: 99, background: theme.badgeBg, color: '#fff', fontSize: 9, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', border: `1.5px solid ${isDark ? '#131516' : '#f6f7f8'}`, fontFamily: "'DM Sans', sans-serif" }}>
-            {badge}
-          </span>
-        )}
-      </>
-    );
-    return href ? (
-      <a href={href} style={style} onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = theme.hover} onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
-        {inner}
-      </a>
-    ) : (
-      <button style={style} onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = theme.hover} onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
-        {inner}
-      </button>
-    );
-  };
-
   return (
     <>
-      {showTopNav && (
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, height: 56, display: 'flex', alignItems: 'center', padding: '0 14px', background: theme.topbarBg, backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', borderBottom: `1px solid ${theme.border}`, gap: 10 }}>
-        <button
-          onClick={onToggleCollapse}
-          style={{ width: 36, height: 36, borderRadius: 10, border: `1px solid ${theme.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: theme.text2, flexShrink: 0, transition: 'background .15s, border-color .15s' }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLElement).style.background = theme.hover;
-            (e.currentTarget as HTMLElement).style.borderColor = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.16)';
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLElement).style.background = 'transparent';
-            (e.currentTarget as HTMLElement).style.borderColor = theme.border;
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2={collapsed ? '15' : '21'} y2="12" />
-            <line x1="3" y1="18" x2={collapsed ? '18' : '21'} y2="18" />
-          </svg>
-        </button>
-
-        <a href="/home" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
-          <img src="../src/assets/shophub-logo.svg" alt="ShopHub" style={{ height: 28 }} />
-        </a>
-
-        {viewport !== 'mobile' ? (
-          <div style={{ flex: 1, maxWidth: 420, margin: '0 auto', position: 'relative' }}>
-            <a
-              href="/explore"
-              style={{ display: 'flex', alignItems: 'center', gap: 8, height: 36, padding: '0 14px', background: theme.searchBg, border: `1px solid ${theme.border}`, borderRadius: 10, textDecoration: 'none', cursor: 'pointer', transition: 'border-color .15s, background .15s' }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = theme.green;
-                (e.currentTarget as HTMLElement).style.background = isDark ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.06)';
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = theme.border;
-                (e.currentTarget as HTMLElement).style.background = theme.searchBg;
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={theme.text2} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <span style={{ fontSize: 13, color: theme.text2, fontFamily: "'DM Sans', sans-serif" }}>Search products, categories...</span>
-              <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)', fontFamily: "'DM Sans', sans-serif", border: `1px solid ${theme.border}`, borderRadius: 5, padding: '1px 5px', letterSpacing: '0.02em' }}>
-                Ctrl+K
-              </span>
+      <nav style={{ position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 50, width: collapsed ? 72 : 236, background: theme.sidebarBg, borderRight: `1px solid ${theme.border}`, overflowY: 'auto', overflowX: 'hidden', padding: '10px 0 32px', transition: 'width .25s cubic-bezier(.4,0,.2,1)', display: viewport === 'mobile' ? 'none' : 'block' }}>
+        <div style={{ padding: '4px 8px 10px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            onClick={onToggleCollapse}
+            style={{ width: 34, height: 34, borderRadius: 10, border: `1px solid ${theme.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: theme.text2, flexShrink: 0, transition: 'background .15s, border-color .15s' }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.background = theme.hover;
+              (e.currentTarget as HTMLElement).style.borderColor = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.16)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.background = 'transparent';
+              (e.currentTarget as HTMLElement).style.borderColor = theme.border;
+            }}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2={collapsed ? '15' : '21'} y2="12" />
+              <line x1="3" y1="18" x2={collapsed ? '18' : '21'} y2="18" />
+            </svg>
+          </button>
+          {!collapsed && (
+            <a href="/home" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', minWidth: 0 }}>
+              <img
+                src="../src/assets/shophub-logo.svg"
+                alt="ShopHub"
+                style={{ height: 34, maxWidth: 132, objectFit: 'contain' }}
+              />
             </a>
-          </div>
-        ) : (
-          <div style={{ flex: 1 }} />
-        )}
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginLeft: 'auto', flexShrink: 0 }}>
-          {viewport === 'mobile' && (
-            <>
-              <TopbarIconBtn href="/explore">
-                <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </TopbarIconBtn>
-              <TopbarIconBtn href="/settings">
-                <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h.01A1.65 1.65 0 0010 3.09V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51h.01a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.01a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" />
-                </svg>
-              </TopbarIconBtn>
-            </>
           )}
-          <TopbarIconBtn badge={user?.unreadNotifications}>
-            <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" viewBox="0 0 24 24">
-              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 01-3.46 0" />
-            </svg>
-          </TopbarIconBtn>
-          <TopbarIconBtn href="/chat" badge={user?.unreadMessages}>
-            <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" viewBox="0 0 24 24">
-              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-            </svg>
-          </TopbarIconBtn>
-
         </div>
-      </header>
-      )}
-
-      <nav style={{ position: 'fixed', left: 0, top: showTopNav ? 56 : 0, bottom: 0, zIndex: 50, width: collapsed ? 72 : 236, background: theme.sidebarBg, borderRight: `1px solid ${theme.border}`, overflowY: 'auto', overflowX: 'hidden', padding: '10px 0 32px', transition: 'width .25s cubic-bezier(.4,0,.2,1)', display: viewport === 'mobile' ? 'none' : 'block' }}>
         <div style={{ padding: '4px 8px' }}>{mainNav.map(item => <SidebarItem key={item.href} {...item} />)}</div>
         {sellNav.length > 0 && (
           <>

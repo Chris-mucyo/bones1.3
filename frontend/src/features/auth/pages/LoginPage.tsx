@@ -3,6 +3,7 @@ import AuthLayout from '../../../shared/layouts/AuthLayout';
 import LoginForm from '../components/LoginForm';
 import { useAuth } from '../hooks/useAuth';
 import type { LoginCredentials } from '../types/auth.types';
+import { authService } from '../services/authService';
 
 /*
   To use your own background image, import it here:
@@ -15,9 +16,27 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   async function handleLogin(data: LoginCredentials) {
-    const user = await login(data);
-    navigate(`/${user.role}/dashboard`);
+  try {
+    console.log("Submitting login...");
+
+    const res = await authService.login(data);
+
+    console.log("Response:", res); 
+
+    authService.saveUser(
+      res.user,
+      {
+        accessToken: res.accessToken,
+        refreshToken: res.refreshToken,
+      },
+      data.rememberMe
+    );
+
+    window.location.href = "/home";
+  } catch (err) {
+    console.error("LOGIN ERROR:", err);
   }
+}
 
   return (
     <AuthLayout>

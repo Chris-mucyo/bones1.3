@@ -22,7 +22,7 @@ export default function NearMePage() {
         </section>
 
         <div className="mt-5">
-          <ListingGrid category="All" search="" sort="popular" isDark={isDark} />
+          <ListingGrid category="All" search="" sort="popular" loaderStyle="ecommerce" isDark={isDark} />
         </div>
       </div>
     </AppLayout>

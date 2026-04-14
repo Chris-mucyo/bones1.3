@@ -5,12 +5,13 @@ import { useTheme } from '../../../shared/components/ThemeProvider';
 
 interface CurrentUser {
   id: string;
-  name: string;
-  avatar?: string;
+  fullName: string;
+  avatarUrl?: string;
   role: 'buyer' | 'seller' | 'Wholesaler' | 'admin';
   unreadMessages?: number;
   unreadNotifications?: number;
 }
+
 
 export default function AccountPage() {
   const { theme } = useTheme();
@@ -26,14 +27,34 @@ export default function AccountPage() {
 
   useEffect(() => {
     const controller = new AbortController();
+    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
     axios
-      .get<CurrentUser>('/api/auth/me', { signal: controller.signal })
+      .get<CurrentUser>('http://localhost:3000/api/v1/users/me', {
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then(res => {
-        setUser(res.data);
-        setDisplayName(res.data.name ?? '');
+        console.log("USER RESPONSE:", res.data);
+
+        const apiUser = res.data;
+
+        const mappedUser: CurrentUser = {
+          id: String(apiUser.id),
+          fullName: apiUser.fullName, // ✅ FIX
+          avatarUrl: apiUser.avatarUrl ?? undefined, // ✅ FIX
+          role: apiUser.role, // ✅ FIX (BUYER → buyer)
+        };
+
+        setUser(mappedUser);
+        setDisplayName(mappedUser.fullName);
       })
       .catch(err => {
-        if (!axios.isCancel(err)) setUser(null);
+        if (!axios.isCancel(err)) {
+          console.error("FETCH USER ERROR:", err);
+          setUser(null);
+        }
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
@@ -63,10 +84,10 @@ export default function AccountPage() {
 
   const influenceStats = useMemo(
     () => [
-      { label: 'Followers', value: user ? Math.max(1400, user.name?.length * 880).toLocaleString() : '1,400', note: 'Cross-platform audience' },
-      { label: 'Monthly reach', value: user ? Math.max(24000, user.name?.length * 7900).toLocaleString() : '24,000', note: 'Content impressions' },
-      { label: 'Engagement', value: user ? `${(5.4 + (user.name?.length % 3)).toFixed(1)}%` : '5.4%', note: 'Likes, saves, comments' },
-      { label: 'CTR to shop', value: user ? `${(2.3 + (user.name?.length % 2) * 0.7).toFixed(1)}%` : '2.3%', note: 'Traffic to product pages' },
+      { label: 'Followers', value: user ? Math.max(1400, user.fullName?.length * 880).toLocaleString() : '1,400', note: 'Cross-platform audience' },
+      { label: 'Monthly reach', value: user ? Math.max(24000, user.fullName?.length * 7900).toLocaleString() : '24,000', note: 'Content impressions' },
+      { label: 'Engagement', value: user ? `${(5.4 + (user.fullName?.length % 3)).toFixed(1)}%` : '5.4%', note: 'Likes, saves, comments' },
+      { label: 'CTR to shop', value: user ? `${(2.3 + (user.fullName?.length % 2) * 0.7).toFixed(1)}%` : '2.3%', note: 'Traffic to product pages' },
     ],
     [user],
   );
@@ -95,7 +116,7 @@ export default function AccountPage() {
             <div className="-mt-14 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
               <div className="flex items-end gap-4">
                 <div className="h-20 w-20 md:h-24 md:w-24 rounded-full border-4 border-black/80 bg-green-500 text-black text-2xl font-bold grid place-items-center">
-                  {(user?.name ?? 'A').charAt(0).toUpperCase()}
+                  {(user?.fullName ?? 'A').charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <h1 className="font-['Playfair_Display'] text-2xl md:text-3xl font-bold">Account Profile</h1>
@@ -105,7 +126,7 @@ export default function AccountPage() {
                 </div>
               </div>
               <span className={`rounded-full px-3 py-1 text-xs font-medium ${soft}`}>
-                {loading ? 'Loading profile...' : `Logged in as ${user?.name ?? 'Unknown user'}`}
+                {loading ? 'Loading profile...' : `Logged in as ${user?.fullName ?? 'Unknown user'}`}
               </span>
             </div>
           </div>

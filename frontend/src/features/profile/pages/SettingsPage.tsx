@@ -110,7 +110,7 @@ export default function SettingsPage() {
         >
           <span
             className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all duration-300 ${
-              value ? 'left-[22px]' : 'left-0.5'
+              value ? 'left-5.5' : 'left-0.5'
             }`}
           />
         </button>
@@ -156,23 +156,10 @@ export default function SettingsPage() {
                   >
                     <span
                       className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow-sm transition-all duration-300 ${
-                        isDark ? 'left-[34px]' : 'left-1'
+                        isDark ? 'left-8.5' : 'left-1'
                       }`}
                     />
-                    <span
-                      className={`absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold transition-opacity ${
-                        isDark ? 'opacity-0' : 'opacity-100 text-black/70'
-                      }`}
-                    >
-                      L
-                    </span>
-                    <span
-                      className={`absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold transition-opacity ${
-                        isDark ? 'opacity-100 text-black' : 'opacity-0'
-                      }`}
-                    >
-                      D
-                    </span>
+                   
                   </button>
                 </div>
               </div>

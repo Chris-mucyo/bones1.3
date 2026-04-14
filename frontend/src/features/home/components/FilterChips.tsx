@@ -10,8 +10,8 @@ interface Props {
 export default function FilterChips({ categories, active, onChange, isDark }: Props) {
   return (
     <div style={{
-      position: 'sticky', top: 56, zIndex: 40,
-      background: isDark ? 'rgba(0,0,0,0.94)' : 'rgba(245,245,245,0.95)',
+      top: 56, zIndex: 40,
+      background: 'transparent',
       backdropFilter: 'blur(14px)',
       borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
       padding: '10px 20px',

@@ -22,7 +22,7 @@ export default function TrendingPage() {
         </section>
 
         <div className="mt-5">
-          <ListingGrid category="All" search="" sort="popular" isDark={isDark} />
+          <ListingGrid category="All" search="" sort="popular" loaderStyle="youtube" isDark={isDark} />
         </div>
       </div>
     </AppLayout>

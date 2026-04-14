@@ -76,7 +76,7 @@ export default function HomePage() {
         >
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 14 }}>
             <div style={{ minWidth: 220 }}>
-              <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 24, margin: 0 }}>Social Commerce Feed</h1>
+              <h1 style={{ fontFamily: "'Playfair Display', serif", color: isDark ? 'rgba(255,255,255)' : 'rgba(0,0,0)', fontSize: 24, margin: 0 }}>Social Commerce Feed</h1>
               <p style={{ margin: '6px 0 0', color: isDark ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,0.65)', fontSize: 13 }}>
                 Discover creator-driven products and trend-backed opportunities.
               </p>
@@ -191,7 +191,7 @@ export default function HomePage() {
             See all →
           </button>
         </div>
-        <ListingGrid category={activeCategory} search={search} isDark={isDark} />
+        <ListingGrid category={activeCategory} search={search} loaderStyle="instagram" isDark={isDark} />
       </div>
 
       <div style={sectionStyle(40)}>

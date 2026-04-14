@@ -1,27 +1,43 @@
 import type { LoginCredentials, RegisterCredentials, User } from '../types/auth.types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = 'http://localhost:3000/api/v1';
 
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<User> {
+  async login(credentials: LoginCredentials): Promise<{
+    user: User;
+    accessToken: string;
+    refreshToken: string;
+  }> {
     const res = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials),
     });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.message || 'Login failed');
+    }
+
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Login failed');
     return data;
   },
 
+  
+
   async register(credentials: RegisterCredentials): Promise<User> {
-    const res = await fetch(`${API_URL}/auth/register`, {
+    const res = await fetch(`${API_URL}/users/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials),
     });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.message || 'Registration failed');
+    }
+
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Registration failed');
     return data;
   },
 
@@ -29,26 +45,51 @@ export const authService = {
     window.location.href = `${API_URL}/auth/google`;
   },
 
-  saveUser(user: User, remember: boolean) {
+  // 🔥 IMPROVED: Also handles tokens!
+  saveUser(user: User, tokens: { accessToken: string; refreshToken: string }, remember: boolean) {
     const storage = remember ? localStorage : sessionStorage;
     storage.setItem('user', JSON.stringify(user));
+    storage.setItem('accessToken', tokens.accessToken);
+    storage.setItem('refreshToken', tokens.refreshToken);
   },
 
   getUser(): User | null {
     try {
-      const raw = localStorage.getItem('user') || sessionStorage.getItem('user');
-      if (!raw || raw === 'undefined' || raw === 'null') return null;
+      // Check both storages (sessionStorage takes priority for "remember=false")
+      const raw = sessionStorage.getItem('user') || localStorage.getItem('user');
+      if (!raw || raw === '' || raw === 'null') return null;
       return JSON.parse(raw);
     } catch {
-      // Corrupt value — wipe it so it doesn't keep crashing
-      localStorage.removeItem('user');
-      sessionStorage.removeItem('user');
+      this.clearUser();
       return null;
     }
   },
 
+  async resendVerification(email: string) {
+    const res = await fetch(`${API_URL}/auth/send-verification`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.message || 'Failed to resend');
+    }
+
+    return res.json();
+  },
+
+  getToken(): string | null {
+    return sessionStorage.getItem('accessToken') || localStorage.getItem('accessToken');
+  },
+
   clearUser() {
     localStorage.removeItem('user');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
     sessionStorage.removeItem('user');
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('refreshToken');
   },
 };

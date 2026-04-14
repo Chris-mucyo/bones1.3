@@ -1,163 +1,143 @@
-import { useState, useEffect } from 'react';
-import type { SignupFormData, StepErrors, UserRole } from '../types/signup.types';
-import { INITIAL_FORM } from '../types/signup.types';
+import { useState, useCallback } from 'react';
+import { INITIAL_FORM} from '../types/signup.types';
+import type { SignupForm } from '../types/signup.types';
 
-const STORAGE_KEY = 'shophub_signup_form';
-
-function saveToDraft(form: SignupFormData) {
-  const { profileImage, profilePreview, ...rest } = form;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(rest));
-}
-
-function loadFromDraft(): Partial<SignupFormData> {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch { return {}; }
-}
+type Errors = Partial<Record<keyof SignupForm | 'budgetRange' | 'experienceLevel' | 'productType' | 'categories' | 'shopDescription' | 'shopAddress', string>>;
 
 export function useSignup() {
-  const [form, setForm]               = useState<SignupFormData>({ ...INITIAL_FORM, ...loadFromDraft() });
-  const [errors, setErrors]           = useState<StepErrors>({});
-  const [loading, setLoading]         = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
+  const [form, setForm]             = useState<SignupForm>(INITIAL_FORM);
+  const [errors, setErrors]         = useState<Errors>({});
+  const [loading, setLoading]       = useState(false);
+  const [serverError, setServerError] = useState('');
 
-  useEffect(() => { saveToDraft(form); }, [form]);
+  const update = useCallback((patch: Partial<SignupForm>) => {
+    setForm(prev => ({ ...prev, ...patch }));
+    setErrors(prev => {
+      const next = { ...prev };
+      (Object.keys(patch) as (keyof SignupForm)[]).forEach(k => delete next[k as keyof Errors]);
+      return next;
+    });
+  }, []);
 
-  const update = (patch: Partial<SignupFormData>) =>
-    setForm(f => ({ ...f, ...patch }));
+  const toggleList = useCallback(
+    (field: 'categories' | 'interests' | 'productTypes', value: string, max: number) => {
+      setForm(prev => {
+        const list = prev[field] as string[];
+        if (list.includes(value)) return { ...prev, [field]: list.filter(v => v !== value) };
+        if (list.length >= max)   return prev;
+        return { ...prev, [field]: [...list, value] };
+      });
+    },
+    [],
+  );
 
-  const clearErrors = () => setErrors({});
+  const handleProfileImage = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = e => update({ profileImage: file, profilePreview: e.target?.result as string });
+    reader.readAsDataURL(file);
+  }, [update]);
 
-  function validate(step: number): boolean {
-    clearErrors();
-    const e: StepErrors = {};
+  const passwordStrength = useCallback((pwd: string) => {
+    if (!pwd)          return { width: '0%',   color: 'transparent', label: '' };
+    if (pwd.length < 6) return { width: '25%',  color: '#ef4444',     label: 'Too short' };
+    const hasUpper   = /[A-Z]/.test(pwd);
+    const hasNumber  = /\d/.test(pwd);
+    const hasSpecial = /[^A-Za-z0-9]/.test(pwd);
+    const score = [pwd.length >= 8, hasUpper, hasNumber, hasSpecial].filter(Boolean).length;
+    if (score <= 1)  return { width: '40%',  color: '#f97316', label: 'Weak'   };
+    if (score === 2) return { width: '65%',  color: '#eab308', label: 'Fair'   };
+    if (score === 3) return { width: '80%',  color: '#84cc16', label: 'Good'   };
+    return               { width: '100%', color: '#22c55e', label: 'Strong' };
+  }, []);
+
+  const validate = useCallback((step: number): boolean => {
+    const e: Errors = {};
 
     if (step === 1) {
-      if (!form.fullName.trim())
-        e.fullName = 'Full name is required';
-      if (!form.email.trim())
-        e.email = 'Email is required';
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-        e.email = 'Enter a valid email address';
-      if (!form.password || form.password.length < 8)
-        e.password = 'Password must be at least 8 characters';
-      if (form.password !== form.confirmPassword)
-        e.confirmPassword = 'Passwords do not match';
-      if (!form.terms)
-        e.terms = 'You must agree to the terms to continue';
+      if (!form.fullName.trim())                         e.fullName        = 'Full name is required';
+      if (!form.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) e.email        = 'Valid email required';
+      if (form.password.length < 8)                      e.password        = 'Min. 8 characters';
+      if (form.password !== form.confirmPassword)        e.confirmPassword = 'Passwords do not match';
+      if (!form.terms)                                   e.terms           = 'You must accept the terms' as any;
     }
 
     if (step === 2) {
-      if (!form.role)
-        e.role = 'Please select how you want to use ShopHub';
-      if (form.role === 'buyer') {
-        if (!form.shoppingFrequency) e.shoppingFrequency = 'Please select a frequency';
-        if (!form.budgetRange)       e.budgetRange       = 'Please select a budget range';
+      if (!form.role)                  e.role = 'Please select a role';
+      if (form.role === 'BUYER') {
+        if (!form.shoppingFrequency)   e.shoppingFrequency = 'Required';
+        if (!form.budget)              e.budget            = 'Required';
       }
-      if (form.role === 'seller' || form.role === 'wholesaler') {
-        if (!form.experienceLevel) e.experienceLevel = 'Please select your experience level';
-        if (!form.productType)     e.productType     = 'Please select a product type';
+      if (form.role === 'SELLER' || form.role === 'WHOLESALER') {
+        if (!form.experienceLevel)     (e as any).experienceLevel = 'Required';
+        if (!form.productType)         (e as any).productType     = 'Required';
       }
     }
 
     if (step === 3) {
-      if (form.role === 'seller' || form.role === 'wholesaler') {
-        if (!form.shopName.trim())        e.shopName  = 'Shop name is required';
-        if (!form.nationalId.trim())
-        e.nationalId = 'National ID is required';
-      else if (!/^1[0-9]{15}$/.test(form.nationalId.replace(/\s/g, '')))
-        e.nationalId = 'Enter a valid 16-digit Rwanda National ID';
-        if (form.categories.length === 0) e.categories = 'Select at least one category';
+      if (form.role === 'SELLER' || form.role === 'WHOLESALER') {
+        if (!form.shopName.trim())    e.shopName    = 'Shop name is required';
+        if (!form.nationalId.trim())  e.nationalId  = 'National ID is required';
+        if (form.nationalId.length !== 16) e.nationalId = 'Must be 16 digits';
+        if (form.categories.length === 0) (e as any).categories = 'Select at least one category';
       }
-      if (form.role === 'buyer') {
-        if (form.interests.length === 0)  e.interests = 'Select at least one interest';
+      if (form.role === 'BUYER') {
+        if (form.interests.length === 0) e.interests = 'Select at least one interest' as any;
       }
     }
 
     setErrors(e);
     return Object.keys(e).length === 0;
-  }
+  }, [form]);
 
-  async function submit(): Promise<boolean> {
+  const submit = useCallback(async (): Promise<boolean> => {
     setLoading(true);
-    setServerError(null);
-    try {
-      const payload = new FormData();
-      payload.append('fullName', form.fullName);
-      payload.append('email',    form.email);
-      payload.append('password', form.password);
-      payload.append('role',     form.role);
+    setServerError('');
 
-      if (form.role === 'seller' || form.role === 'wholesaler') {
-        payload.append('shopName',   form.shopName);
-        payload.append('nationalId', form.nationalId);
-        payload.append('categories', JSON.stringify(form.categories));
-        if (form.experienceLevel) payload.append('experienceLevel', form.experienceLevel);
-        if (form.productType)     payload.append('productType',     form.productType);
-      } else {
-        payload.append('interests', JSON.stringify(form.interests));
-        if (form.shoppingFrequency) payload.append('shoppingFrequency', form.shoppingFrequency);
-        if (form.budgetRange)       payload.append('budgetRange',       form.budgetRange);
+    try {
+      const payload: Record<string, any> = {
+        fullName:  form.fullName,
+        email:     form.email,
+        password:  form.password,
+        role:      form.role.toUpperCase(),
+      };
+
+      if (form.role === 'BUYER') {
+        payload.shoppingFrequency = form.shoppingFrequency;
+        payload.budget            = form.budget;
+        payload.interests         = form.interests;
       }
 
-      if (form.profileImage) payload.append('profileImage', form.profileImage);
+      if (form.role === 'SELLER' || form.role === 'WHOLESALER') {
+        payload.shopName        = form.shopName;
+        payload.nationalId      = form.nationalId;
+        payload.shopDescription = form.shopDescription;
+        payload.shopAddress     = form.shopAddress;
+        payload.productTypes    = form.categories;
+        payload.experience      = form.experienceLevel;
+      }
 
-      const res = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        body: payload,
+      const res = await fetch('http://localhost:3000/api/v1/users/register', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
       });
 
+      const data = await res.json();
       if (!res.ok) {
-        const data = await res.json();
-        const detail = data.errors?.[0] ?? data.message ?? 'Registration failed';
-        throw new Error(detail);
+        setServerError(
+          Array.isArray(data.message) ? data.message.join(', ') : data.message ?? 'Registration failed',
+        );
+        return false;
       }
 
-      const data = await res.json();
-      // Backend wraps response: { success, message, data: { user, accessToken, refreshToken } }
-      const user = data.data?.user ?? data.user ?? null;
-      if (user) localStorage.setItem('user', JSON.stringify(user));
-      if (data.data?.accessToken)  localStorage.setItem('accessToken',  data.data.accessToken);
-      if (data.data?.refreshToken) localStorage.setItem('refreshToken', data.data.refreshToken);
-      localStorage.removeItem(STORAGE_KEY);
       return true;
-    } catch (err: unknown) {
-      setServerError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
+    } catch {
+      setServerError('Network error. Please try again.');
       return false;
     } finally {
       setLoading(false);
     }
-  }
-
-  function passwordStrength(pw: string) {
-    let score = 0;
-    if (pw.length >= 8)           score++;
-    if (/[A-Z]/.test(pw))         score++;
-    if (/[0-9]/.test(pw))         score++;
-    if (/[^A-Za-z0-9]/.test(pw))  score++;
-    const levels = [
-      { label: 'Enter a password', color: 'transparent', width: '0%'   },
-      { label: 'Weak',             color: '#ef4444',     width: '25%'  },
-      { label: 'Fair',             color: '#f97316',     width: '50%'  },
-      { label: 'Good',             color: '#eab308',     width: '75%'  },
-      { label: 'Strong 💪',        color: '#22c55e',     width: '100%' },
-    ];
-    return { score, ...levels[score] };
-  }
-
-  function toggleList(key: 'categories' | 'interests', item: string, max = 5) {
-    setForm(f => {
-      const list = f[key] as string[];
-      const has  = list.includes(item);
-      if (!has && list.length >= max) return f;
-      return { ...f, [key]: has ? list.filter(c => c !== item) : [...list, item] };
-    });
-  }
-
-  function handleProfileImage(file: File) {
-    update({ profileImage: file, profilePreview: URL.createObjectURL(file) });
-  }
+  }, [form]);
 
   return {
     form, errors, loading, serverError,

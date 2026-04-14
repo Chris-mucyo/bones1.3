@@ -44,6 +44,14 @@ function hashIndex(id: string, mod: number): number {
 interface ApiResponse { listings: Listing[]; }
 interface Props { isDark: boolean; }
 
+function getAdaptiveMinDelay(): number {
+  const connection = (navigator as Navigator & { connection?: { effectiveType?: string } }).connection;
+  const type = connection?.effectiveType;
+  if (type === 'slow-2g' || type === '2g') return 1700;
+  if (type === '3g') return 1100;
+  return 650;
+}
+
 export default function TrendingSection({ isDark }: Props) {
   const navigate = useNavigate();
   const [listings, setListings] = useState<Listing[]>([]);
@@ -68,6 +76,9 @@ export default function TrendingSection({ isDark }: Props) {
 
   useEffect(() => {
     const controller = new AbortController();
+    const startedAt = Date.now();
+    const minDelay = getAdaptiveMinDelay();
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     axios
       .get<ApiResponse>('/api/listings', {
@@ -84,9 +95,15 @@ export default function TrendingSection({ isDark }: Props) {
         setListings(array);
       })
       .catch(err => { if (!axios.isCancel(err)) setListings([]); })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        const remaining = Math.max(minDelay - (Date.now() - startedAt), 0);
+        timeoutId = setTimeout(() => setLoading(false), remaining);
+      });
 
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, []);
 
   if (loading) return (

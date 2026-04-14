@@ -1,71 +1,97 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
-  IsNotEmpty,
   IsEnum,
-  IsNumber,
+  IsNotEmpty,
   IsOptional,
   IsString,
   MinLength,
+  IsArray,
 } from 'class-validator';
-import { Role } from '../../../generated/prisma/client.js';
+import { ApiProperty } from '@nestjs/swagger';
+
+export enum Role {
+  BUYER = 'BUYER',
+  SELLER = 'SELLER',
+  WHOLESALER = 'WHOLESALER',
+  ADMIN = 'ADMIN',
+}
 
 export class CreateUserDto {
-  @ApiProperty({
-    example: 'johndoe',
-    description: 'Unique username (no spaces)',
-  })
+  @ApiProperty({ example: 'John Doe' })
   @IsNotEmpty()
   @IsString()
   fullName: string;
 
-  @ApiProperty({
-    example: 'john@example.com',
-    description: 'User email address',
-  })
+  @ApiProperty({ example: 'user@example.com' })
   @IsEmail()
   email: string;
 
-  @ApiProperty({
-    example: '0787709760',
-    description: 'User phone number (optional)',
-  })
-  @IsOptional()
-  @IsNumber()
-  phoneNumber?: number;
-
-  @ApiProperty({
-    example: 'SecurePass123!',
-    description: 'Password (minimum 8 characters)',
-    minLength: 8,
-  })
-  @IsString()
+  @ApiProperty({ example: 'password123' })
+  @IsNotEmpty()
   @MinLength(8)
   password: string;
 
-  @ApiPropertyOptional({
-    example: 'Chez Ktty',
-    description: 'Full shop name',
-  })
+  @ApiProperty({ example: Role.BUYER, enum: Role })
+  @IsEnum(Role)
+  role: Role;
+
+  @ApiProperty({ example: '+1234567890' })
+  @IsOptional()
+  @IsString()
+  phoneNumber?: string;
+
+  // Seller / Wholesaler fields
+  @ApiProperty({ example: 'John Doe\'s Shop' })
   @IsOptional()
   @IsString()
   shopName?: string;
 
-  @ApiPropertyOptional({
-    example: 'author',
-    enum: Role,
-    description: 'User role — only changeable by admin',
-  })
-  @IsEnum(Role)
-  role: Role;
-
-
-  @ApiPropertyOptional({
-    example: 'Passionate tech journalist and blogger.',
-    description: 'Short user bio',
-  })
+  @ApiProperty({ example: '1234567890123' })
   @IsOptional()
   @IsString()
-  bio?: string;
+  nationalId?: string;
 
+  @ApiProperty({ example: 'We sell the best products!' })
+  @IsOptional()
+  @IsString()
+  shopDescription?: string;
+
+  @ApiProperty({ example: '123 Main St, City, State 12345' })
+  @IsOptional()
+  @IsString()
+  shopAddress?: string;
+
+  @ApiProperty({ example: ['Electronics', 'Clothing'] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  productTypes?: string[];
+
+  @ApiProperty({ example: ['Experience 1', 'Experience 2'] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  experiences?: string[];
+
+  @ApiProperty({ example: 'Experience 1' })
+  @IsOptional()
+  @IsString()
+  experience?: string;
+
+  // Buyer fields
+  @ApiProperty({ example: ['Sports', 'Music'] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  interests?: string[];
+
+  @ApiProperty({ example: 'Weekly' })
+  @IsOptional()
+  @IsString()
+  shoppingFrequency?: string;
+
+  @ApiProperty({ example: 'Budget' })
+  @IsOptional()
+  @IsString()
+  budget?: string;
 }

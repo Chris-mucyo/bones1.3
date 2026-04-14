@@ -11,9 +11,10 @@ interface Props {
   isDark: boolean;
   badge?: string;
   sort?: string;
+  loaderStyle?: 'youtube' | 'instagram' | 'ecommerce';
 }
 
-function GridSkeleton({ isDark }: { isDark: boolean }) {
+function GridSkeleton({ isDark, variant }: { isDark: boolean; variant: 'youtube' | 'instagram' | 'ecommerce' }) {
   const base   = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
   const shine  = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.10)';
   const border = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
@@ -31,17 +32,19 @@ function GridSkeleton({ isDark }: { isDark: boolean }) {
       <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
       {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${border}`, background: bg }}>
-          <div style={{ paddingTop: '72%', position: 'relative' }}>
+          <div style={{ paddingTop: variant === 'youtube' ? '56.25%' : variant === 'instagram' ? '100%' : '72%', position: 'relative' }}>
             <div style={{ ...pulse, position: 'absolute', inset: 0, borderRadius: 0 }} />
           </div>
           <div style={{ padding: '12px 12px 8px' }}>
-            <div style={{ display: 'flex', gap: 7, marginBottom: 10 }}>
-              <div style={{ ...pulse, width: 22, height: 22, borderRadius: '50%' }} />
-              <div style={{ ...pulse, height: 10, flex: 1 }} />
-            </div>
-            <div style={{ ...pulse, height: 12, marginBottom: 6 }} />
-            <div style={{ ...pulse, height: 12, width: '65%', marginBottom: 10 }} />
-            <div style={{ ...pulse, height: 10, width: '45%' }} />
+            {variant !== 'ecommerce' && (
+              <div style={{ display: 'flex', gap: 7, marginBottom: 10 }}>
+                <div style={{ ...pulse, width: 22, height: 22, borderRadius: '50%' }} />
+                <div style={{ ...pulse, height: 10, flex: 1 }} />
+              </div>
+            )}
+            <div style={{ ...pulse, height: 12, marginBottom: 6, width: variant === 'youtube' ? '82%' : '100%' }} />
+            <div style={{ ...pulse, height: 12, width: variant === 'ecommerce' ? '45%' : '65%', marginBottom: 10 }} />
+            {variant !== 'youtube' && <div style={{ ...pulse, height: 10, width: '45%' }} />}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px 10px', borderTop: `1px solid ${border}` }}>
             <div style={{ ...pulse, height: 10, width: 55 }} />
@@ -58,7 +61,15 @@ interface ApiResponse {
   listings: Listing[];
 }
 
-export default function ListingGrid({ category, search, isDark, badge, sort }: Props) {
+function getAdaptiveMinDelay(): number {
+  const connection = (navigator as Navigator & { connection?: { effectiveType?: string } }).connection;
+  const type = connection?.effectiveType;
+  if (type === 'slow-2g' || type === '2g') return 1800;
+  if (type === '3g') return 1200;
+  return 700;
+}
+
+export default function ListingGrid({ category, search, isDark, badge, sort, loaderStyle = 'ecommerce' }: Props) {
   const navigate = useNavigate();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading]   = useState(true);
@@ -66,6 +77,9 @@ export default function ListingGrid({ category, search, isDark, badge, sort }: P
 
   useEffect(() => {
     const controller = new AbortController();
+    const startedAt = Date.now();
+    const minDelay = getAdaptiveMinDelay();
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     setLoading(true);
     setError(null);
 
@@ -95,14 +109,20 @@ export default function ListingGrid({ category, search, isDark, badge, sort }: P
           );
         }
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        const remaining = Math.max(minDelay - (Date.now() - startedAt), 0);
+        timeoutId = setTimeout(() => setLoading(false), remaining);
+      });
 
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [category, search, badge, sort]);
 
   if (loading) return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
-      <GridSkeleton isDark={isDark} />
+      <GridSkeleton isDark={isDark} variant={loaderStyle} />
     </div>
   );
 
