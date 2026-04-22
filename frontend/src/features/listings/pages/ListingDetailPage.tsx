@@ -262,18 +262,19 @@ export default function ListingDetailPage() {
   };
   const sellerDisplay = seller.shopName || seller.name || 'Unknown seller';
 
-  const pageTheme = isDark ? 'bg-black text-white' : 'bg-[#f7f9fc] text-black';
-  const mutedText = isDark ? 'text-white/40' : 'text-black/60';
-  const borderTone = isDark ? 'border-white/[0.07]' : 'border-black/10';
-  const tabIdle = isDark ? 'text-white/30 hover:text-white/60' : 'text-black/55 hover:text-black/80';
-  const cardTone = isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-black/[0.02] border-black/10';
-  const softButton = isDark
-    ? 'border-white/[0.1] bg-white/[0.04] text-white/50 hover:bg-white/[0.07] hover:text-white'
-    : 'border-black/10 bg-black/[0.03] text-black/70 hover:bg-black/[0.06] hover:text-black';
+  // Use CSS variables for theming
+  const themeStyles = {
+    pageTheme: { background: 'var(--bg)', color: 'var(--text1)' },
+    mutedText: { color: 'var(--text2)' },
+    borderTone: 'var(--border-custom)',
+    tabIdle: { color: 'var(--text3)' },
+    cardTone: { background: theme === 'dark' ? 'rgba(34,197,94,0.03)' : 'rgba(34,197,94,0.02)', borderColor: 'var(--border-custom)' },
+    softButton: { borderColor: 'var(--border-custom)', color: 'var(--text2)' }
+  };
 
   return (
     <AppLayout>
-      <div className={`min-h-screen overflow-x-hidden ${pageTheme}`} style={{ fontFamily: "'Outfit',sans-serif" }}>
+      <div style={{ minHeight: '100vh', overflow: 'hidden', fontFamily: "'Outfit',sans-serif", ...themeStyles.pageTheme }}>
 
         {/* ── Share toast ── */}
         {shareToast && (
@@ -285,11 +286,11 @@ export default function ListingDetailPage() {
 
         {/* ── Error state ── */}
         {error && (
-          <div className={`flex flex-col items-center justify-center py-24 gap-4 ${mutedText}`}>
-            <AlertCircle size={40} className="text-red-400/60" />
-            <p className="text-[14px]">{error}</p>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '96px 16px', gap: '16px', ...themeStyles.mutedText }}>
+            <AlertCircle size={40} style={{ color: '#f87171', opacity: 0.6 }} />
+            <p style={{ fontSize: '14px' }}>{ error}</p>
             <button onClick={() => fetchListing(id!)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full border ${borderTone} text-[13px] font-semibold transition-all ${isDark ? 'hover:border-white/25' : 'hover:border-black/30'}`}>
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '9999px', border: `1px solid ${themeStyles.borderTone}`, fontSize: '13px', fontWeight: '600', transition: 'all 0.2s' }}>
               <RefreshCw size={13} /> Try again
             </button>
           </div>

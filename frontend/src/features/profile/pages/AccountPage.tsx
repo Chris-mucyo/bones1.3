@@ -106,9 +106,9 @@ export default function AccountPage() {
 
   return (
     <AppLayout>
-      <div className=\"min-h-screen p-4 md:p-6 lg:p-8\" style={{ background: 'var(--bg)', color: 'var(--text1)' }}>
-        <section className=\"rounded-2xl overflow-hidden\" style={{ background: 'var(--bg)', border: '1px solid var(--border-custom)' }}>
-          <div className=\"h-32 md:h-40 w-full\" style={{ background: 'linear-gradient(to right, rgba(34,197,94,0.2), rgba(34,197,94,0.15), rgba(34,197,94,0.1))' }} />
+      <div className="min-h-screen p-4 md:p-6 lg:p-8\" style={{ background: 'var(--bg)', color: 'var(--text1)' }}>
+        <section className="rounded-2xl overflow-hidden\" style={{ background: 'var(--bg)', border: '1px solid var(--border-custom)' }}>
+          <div className="h-32 md:h-40 w-full\" style={{ background: 'linear-gradient(to right, rgba(34,197,94,0.2), rgba(34,197,94,0.15), rgba(34,197,94,0.1))' }} />
           <div className="p-5 md:p-7">
             <div className="-mt-14 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
               <div className="flex items-end gap-4">
@@ -117,16 +117,17 @@ export default function AccountPage() {
                 </div>
                 <div>
                   <h1 className="font-['Playfair_Display'] text-2xl md:text-3xl font-bold">Account Profile</h1>
-                  <p className=\"text-sm md:text-base\" style={{ color: 'var(--text2)' }}>
+                  <p className="text-sm md:text-base" style={{ color: 'var(--text2)' }}>
                     Personal profile, preferences, and security settings.
                   </p>
                 </div>
               </div>
-              <span className=\"rounded-full px-3 py-1 text-xs font-medium\" style={{ background: 'var(--bg2)', border: '1px solid var(--border-custom)', color: 'var(--text3)' }}>
+              <span className="rounded-full px-3 py-1 text-xs font-medium\" style={{ background: 'var(--bg2)', border: '1px solid var(--border-custom)', color: 'var(--text3)' }}>
                 {loading ? 'Loading profile...' : `Logged in as ${user?.fullName ?? 'Unknown user'}`}
               </span>
             </div>
           </div>
+          
         </section>
 
         <div className="mt-6 grid grid-cols-1 xl:grid-cols-12 gap-6">

@@ -29,7 +29,7 @@ export default function OAuthSuccess() {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center gap-4"
-      style={{ background: '#080e09' }}
+      style={{ background: 'var(--bg)', color: 'var(--text1)' }}
     >
       {/* Spinning ring */}
       <div

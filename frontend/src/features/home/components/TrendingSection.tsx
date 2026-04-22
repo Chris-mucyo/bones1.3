@@ -57,12 +57,13 @@ export default function TrendingSection({ isDark }: Props) {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading]   = useState(true);
 
-  const border  = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
-  const cardBg  = isDark ? '#0f0f0f' : '#ffffff';
+  // Use CSS variables for theming
+  const border  = 'var(--border-custom)';
+  const cardBg  = 'var(--bg2)';
   const hoverBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)';
-  const text1   = isDark ? '#fff' : '#0f0f0f';
-  const text2   = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.55)';
-  const rankCol = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+  const text1   = 'var(--text1)';
+  const text2   = 'var(--text2)';
+  const rankCol = 'var(--divider)';
 
   const pulse: React.CSSProperties = {
     background: `linear-gradient(90deg,

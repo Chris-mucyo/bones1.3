@@ -64,7 +64,7 @@ export default function ListingsPage() {
           else next.set('category', cat);
           setSearchParams(next);
         }}
-        isDark={isDark}
+        isDark={theme === 'dark'}
       />
 
       <div className="min-h-screen px-5 py-5" style={{ background: 'var(--bg)', color: 'var(--text1)' }}>
@@ -90,6 +90,7 @@ export default function ListingsPage() {
                 borderColor: 'var(--border-custom)',
                 background: 'var(--bg2)',
                 color: 'var(--text1)',
+              }}
             />
           </div>
         </section>
@@ -101,7 +102,7 @@ export default function ListingsPage() {
             badge={queryBadge}
             sort={querySort}
             loaderStyle={loaderStyle}
-            isDark={isDark}
+            isDark={theme === 'dark'}
           />
         </div>
       </div>

@@ -60,9 +60,9 @@ export default function CreateListingPage() {
 
   return (
     <AppLayout>
-      <div className={`min-h-screen p-4 md:p-6 lg:p-8 ${isDark ? 'bg-black text-white' : 'bg-[#f7f9fc] text-black'}`}>
-        <section className={`rounded-2xl p-5 md:p-7 ${surface}`}>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div style={{ minHeight: '100vh', padding: '16px', background: 'var(--bg)', color: 'var(--text1)' }}>
+        <section style={{ borderRadius: '16px', padding: '20px', ...styles.surface }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
               <h1 className="font-['Playfair_Display'] text-2xl md:text-3xl font-bold">Create listing</h1>
               <p className={`mt-1 text-sm md:text-base ${muted}`}>
