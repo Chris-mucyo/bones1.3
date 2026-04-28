@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import AppLayout from '../../../shared/layouts/AppLayout';
-import { useTheme } from '../../../shared/components/ThemeProvider';
 import type { Listing } from '../types';
 
 type ViewerRole = 'buyer' | 'seller' | 'Wholesaler' | 'unknown';
@@ -71,7 +70,7 @@ function normalizeTopEntities(payload: unknown): RankedEntity[] {
 }
 
 export default function TopSellersPage() {
-  const { theme } = useTheme();
+  
   const viewerRole = parseRoleFromToken(getToken());
   const viewerId = parseUserIdFromToken(getToken());
   const [rows, setRows] = useState<RankedEntity[]>([]);
@@ -161,10 +160,6 @@ export default function TopSellersPage() {
     return withoutSelf;
   }, [rows, viewerRole, viewerId]);
 
-  const surface = '';
-  const soft = '';
-  const muted = '';
-  const chip = '';
 
   return (
     <AppLayout>

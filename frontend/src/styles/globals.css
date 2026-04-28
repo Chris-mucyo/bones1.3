@@ -1,11 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Outfit:wght@300;400;500;600;700&display=swap');
-<<<<<<< HEAD
-@import 'tailwindcss';
-=======
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
->>>>>>> main
 
 /* ── Tailwind v4 theme ── */
 @theme {
@@ -15,43 +11,6 @@
   --color-green-600: #16a34a;
 }
 
-<<<<<<< HEAD
-/* ── Dark/light tokens ── */
-[data-theme='dark'] {
-  --bg:           #000000;
-  --bg2:          #0f0f0f;
-  --border:       rgba(255,255,255,0.08);
-  --border2:      rgba(255,255,255,0.13);
-  --text1:        #ffffff;
-  --text2:        rgba(255,255,255,0.55);
-  --text3:        rgba(255,255,255,0.3);
-  --input-bg:     rgba(34,197,94,0.05);
-  --input-border: rgba(34,197,94,0.15);
-  --label:        rgba(34,197,94,0.45);
-  --social-bg:    rgba(255,255,255,0.04);
-  --social-border:rgba(34,197,94,0.1);
-  --divider:      rgba(34,197,94,0.1);
-  --link:         #22c55e;
-}
-[data-theme='light'] {
-  --bg:           #f5f5f5;
-  --bg2:          #ffffff;
-  --border:       rgba(0,0,0,0.08);
-  --border2:      rgba(0,0,0,0.13);
-  --text1:        #0f0f0f;
-  --text2:        rgba(0,0,0,0.55);
-  --text3:        rgba(0,0,0,0.35);
-  --input-bg:     rgba(22,163,74,0.04);
-  --input-border: rgba(22,163,74,0.2);
-  --label:        rgba(22,163,74,0.6);
-  --social-bg:    rgba(0,0,0,0.03);
-  --social-border:rgba(22,163,74,0.15);
-  --divider:      rgba(22,163,74,0.12);
-  --link:         #16a34a;
-}
-
-/* ── Keyframes ── */
-=======
 /* ════════════════════════════════════════════
    TWEAKCN THEME — light
    ════════════════════════════════════════════ */
@@ -277,7 +236,6 @@
 /* ════════════════════════════════════════════
    KEYFRAMES
    ════════════════════════════════════════════ */
->>>>>>> main
 @keyframes fadeUp    { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
 @keyframes cardIn    { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
 @keyframes shimmer   { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
@@ -291,13 +249,9 @@
 @keyframes cartBob   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
 @keyframes glitchScan{ 0%,100%{transform:translateY(-100px);opacity:0} 40%{opacity:1} 60%{transform:translateY(100px);opacity:0} }
 
-<<<<<<< HEAD
-/* ── Staggered entrance animations ── */
-=======
 /* ════════════════════════════════════════════
    STAGGERED ENTRANCE ANIMATIONS
    ════════════════════════════════════════════ */
->>>>>>> main
 .auth-anim-1 { animation: fadeUp .6s cubic-bezier(.22,1,.36,1) 60ms  both; }
 .auth-anim-2 { animation: fadeUp .6s cubic-bezier(.22,1,.36,1) 140ms both; }
 .auth-anim-3 { animation: fadeUp .6s cubic-bezier(.22,1,.36,1) 220ms both; }
@@ -305,15 +259,11 @@
 .auth-anim-5 { animation: fadeUp .6s cubic-bezier(.22,1,.36,1) 380ms both; }
 .auth-anim-6 { animation: fadeUp .6s cubic-bezier(.22,1,.36,1) 460ms both; }
 
-<<<<<<< HEAD
-/* ── Auth input field ── */
-=======
 /* ════════════════════════════════════════════
    AUTH COMPONENTS
    ════════════════════════════════════════════ */
 
 /* Input field */
->>>>>>> main
 .auth-field {
   background:    var(--input-bg);
   border:        1px solid var(--input-border);
@@ -330,11 +280,7 @@
 .auth-field:focus { border-color: #22c55e; background: rgba(34,197,94,0.07); }
 .auth-field.error { border-color: #ef4444; }
 
-<<<<<<< HEAD
-/* ── Auth primary button ── */
-=======
 /* Primary button */
->>>>>>> main
 .auth-btn {
   background:      #22c55e;
   color:           #000;
@@ -357,11 +303,7 @@
 .auth-btn:active:not(:disabled) { transform: none; }
 .auth-btn:disabled              { opacity: .6; cursor: not-allowed; }
 
-<<<<<<< HEAD
-/* ── Auth spinner ── */
-=======
 /* Spinner */
->>>>>>> main
 .auth-spinner {
   width: 18px; height: 18px;
   border: 2px solid rgba(0,0,0,0.2);
@@ -371,11 +313,7 @@
   display: inline-block;
 }
 
-<<<<<<< HEAD
-/* ── Custom checkbox ── */
-=======
 /* Custom checkbox */
->>>>>>> main
 .auth-chk { display: none; }
 .auth-chk-box {
   width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0;
@@ -394,11 +332,7 @@
   transform: rotate(45deg);
 }
 
-<<<<<<< HEAD
-/* ── Auth social button ── */
-=======
 /* Social button */
->>>>>>> main
 .auth-social {
   background:      var(--social-bg);
   border:          1px solid var(--social-border);
@@ -418,13 +352,9 @@
 }
 .auth-social:hover { background: rgba(34,197,94,0.07); border-color: #22c55e; color: var(--text1); }
 
-<<<<<<< HEAD
-/* ── Utilities ── */
-=======
 /* ════════════════════════════════════════════
    UTILITIES
    ════════════════════════════════════════════ */
->>>>>>> main
 .scrollbar-none { scrollbar-width: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
 .line-clamp-2 {
@@ -432,8 +362,4 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> main

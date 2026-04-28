@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useTheme } from '../components/ThemeProvider';
 import CommerceScene from '../../features/auth/components/CommerceScene';
 
@@ -19,11 +19,7 @@ export default function AuthLayout({ children, bgImage }: AuthLayoutProps) {
   const { theme, toggle } = useTheme();
 
   return (
-<<<<<<< HEAD
     <div className="min-h-screen flex flex-col lg:flex-row" data-theme={theme}>
-=======
-    <div className="min-h-screen flex flex-col lg:flex-row dark" data-theme={theme}>
->>>>>>> main
 
       {/* LEFT PANEL */}
       <div
@@ -84,25 +80,15 @@ export default function AuthLayout({ children, bgImage }: AuthLayoutProps) {
       {/* RIGHT PANEL */}
       <div
         className="w-full lg:w-[48%] flex items-center justify-center p-6 lg:p-12 relative min-h-screen transition-colors duration-300"
-<<<<<<< HEAD
-        style={{ background: theme === 'dark' ? '#111a13' : '#ffffff' }}
-=======
         style={{ background: 'var(--bg2)' }}
->>>>>>> main
       >
         <button
           onClick={toggle}
           className="absolute top-5 right-5 z-20 w-9 h-9 rounded-full flex items-center justify-center border transition-all duration-200 hover:border-green-500 hover:text-green-500"
           style={{
-<<<<<<< HEAD
-            background: theme === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
-            borderColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-            color: theme === 'dark' ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-=======
             background: 'rgba(255,255,255,0.04)',
             borderColor: 'var(--border-custom)',
             color: 'var(--text2)',
->>>>>>> main
           }}
           aria-label="Toggle theme"
         >

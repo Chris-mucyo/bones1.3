@@ -19,8 +19,12 @@ export default function OAuthSuccess() {
 
     try {
       const user = JSON.parse(decodeURIComponent(userRaw));
-      authService.saveUser({ ...user, token: accessToken, refreshToken }, true);
-      navigate(`/home`);
+      authService.saveUser(
+        { ...user, token: accessToken },
+        { accessToken, refreshToken },
+        true
+      );
+      navigate('/home');
     } catch {
       navigate('/login?error=oauth_failed');
     }
@@ -29,19 +33,13 @@ export default function OAuthSuccess() {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center gap-4"
-<<<<<<< HEAD
-      style={{ background: '#080e09' }}
-=======
       style={{ background: 'var(--bg)', color: 'var(--text1)' }}
->>>>>>> main
     >
-      {/* Spinning ring */}
       <div
         className="w-12 h-12 rounded-full border-2 border-green-500"
         style={{ borderTopColor: 'transparent', animation: 'spin 0.7s linear infinite' }}
       />
 
-      {/* Logo */}
       <div className="flex items-center gap-2 mt-2">
         <div className="w-7 h-7 rounded-lg bg-green-500 flex items-center justify-center">
           <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#fff" strokeWidth="2.2">

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import AppLayout from '../../../shared/layouts/AppLayout';
-import { useTheme } from '../../../shared/components/ThemeProvider';
 
 interface CurrentUser {
   id: string;
@@ -13,7 +12,6 @@ interface CurrentUser {
 }
 
 export default function AccountPage() {
-  const { theme } = useTheme();
 
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);

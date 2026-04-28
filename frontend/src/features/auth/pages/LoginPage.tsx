@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import AuthLayout from '../../../shared/layouts/AuthLayout';
 import LoginForm from '../components/LoginForm';
 import { useAuth } from '../hooks/useAuth';
@@ -12,31 +11,27 @@ import { authService } from '../services/authService';
 */
 
 export default function LoginPage() {
-  const { login, loading, error } = useAuth();
-  const navigate = useNavigate();
+  const { loading, error } = useAuth();
 
   async function handleLogin(data: LoginCredentials) {
-  try {
-    console.log("Submitting login...");
+    try {
+      console.log("Submitting login...");
 
-    const res = await authService.login(data);
+      const res = await authService.login(data);
 
-    console.log("Response:", res); 
+      console.log("Response:", res);
 
-    authService.saveUser(
-      res.user,
-      {
-        accessToken: res.accessToken,
-        refreshToken: res.refreshToken,
-      },
-      data.rememberMe
-    );
+      authService.saveUser(
+        res.user,
+        { accessToken: res.accessToken, refreshToken: res.refreshToken },
+        !!data.rememberMe
+      );
 
-    window.location.href = "/home";
-  } catch (err) {
-    console.error("LOGIN ERROR:", err);
+      window.location.href = "/home";
+    } catch (err) {
+      console.error("LOGIN ERROR:", err);
+    }
   }
-}
 
   return (
     <AuthLayout>

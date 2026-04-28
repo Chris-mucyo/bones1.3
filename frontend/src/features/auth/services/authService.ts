@@ -23,8 +23,6 @@ export const authService = {
     return data;
   },
 
-  
-
   async register(credentials: RegisterCredentials): Promise<User> {
     const res = await fetch(`${API_URL}/users/register`, {
       method: 'POST',
@@ -45,8 +43,11 @@ export const authService = {
     window.location.href = `${API_URL}/auth/google`;
   },
 
-  // 🔥 IMPROVED: Also handles tokens!
-  saveUser(user: User, tokens: { accessToken: string; refreshToken: string }, remember: boolean) {
+  saveUser(
+    user: User,
+    tokens: { accessToken: string; refreshToken: string },
+    remember: boolean = false
+  ) {
     const storage = remember ? localStorage : sessionStorage;
     storage.setItem('user', JSON.stringify(user));
     storage.setItem('accessToken', tokens.accessToken);
@@ -55,7 +56,6 @@ export const authService = {
 
   getUser(): User | null {
     try {
-      // Check both storages (sessionStorage takes priority for "remember=false")
       const raw = sessionStorage.getItem('user') || localStorage.getItem('user');
       if (!raw || raw === '' || raw === 'null') return null;
       return JSON.parse(raw);
