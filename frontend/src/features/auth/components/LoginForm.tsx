@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
-import { useTheme } from '../../../shared/components/ThemeProvider';
 import type { LoginCredentials } from '../types/auth.types';
 import { validators } from '../../../shared/utils/validators';
 import { authService } from '../services/authService';
@@ -12,18 +11,18 @@ interface Props {
 }
 
 export default function LoginForm({ onSubmit, loading, error }: Props) {
-  const { theme } = useTheme();
+
   const [form, setForm] = useState<LoginCredentials>({ email: '', password: '', rememberMe: false });
   const [errors, setErrors] = useState<{ email?: string | null; password?: string | null }>({});
   const [showPassword, setShowPassword] = useState(false);
 
-  const t1 = theme === 'dark' ? '#f0faf2' : '#0c1f0e';
-  const t2 = theme === 'dark' ? 'rgba(240,250,242,0.5)' : 'rgba(12,31,14,0.55)';
-  const t3 = theme === 'dark' ? 'rgba(240,250,242,0.25)' : 'rgba(12,31,14,0.3)';
-  const labelColor = theme === 'dark' ? 'rgba(34,197,94,0.45)' : 'rgba(22,163,74,0.6)';
-  const divider = theme === 'dark' ? 'rgba(34,197,94,0.1)' : 'rgba(22,163,74,0.12)';
-  const link = theme === 'dark' ? '#22c55e' : '#16a34a';
-  
+  const cssVar = (name: string) => `var(--${name})`;
+  const t1 = cssVar('text1');
+  const t2 = cssVar('text2');
+  const t3 = cssVar('text3');
+  const labelColor = cssVar('label');
+  const divider = cssVar('divider');
+  const link = cssVar('link');
 
   function validate() {
     const e = { email: validators.email(form.email), password: validators.password(form.password) };
@@ -40,7 +39,6 @@ export default function LoginForm({ onSubmit, loading, error }: Props) {
   return (
     <div className="w-full max-w-[390px]">
 
-      {/* Header */}
       <div className="mb-8 auth-anim-1">
         <div
           className="inline-flex items-center gap-2 px-3 py-1 rounded-full border mb-4 text-[10px] font-semibold tracking-widest uppercase"
@@ -60,22 +58,15 @@ export default function LoginForm({ onSubmit, loading, error }: Props) {
         </p>
       </div>
 
-      {/* Google Button — full width */}
       <div className="auth-anim-2 mb-5">
         <button
           type="button"
           onClick={() => authService.loginWithGoogle()}
-          className="w-full flex items-center justify-center gap-3 rounded-xl border py-3.5 font-semibold text-sm transition-all duration-200"
+          className="w-full flex items-center justify-center gap-3 rounded-xl border py-3.5 font-semibold text-sm transition-all duration-200 hover:border-green-500"
           style={{
-            background: theme === 'dark' ? '#000000' : '#ffffff',
-            borderColor: theme === 'dark' ? 'rgba(34,197,94,0.2)' : 'rgba(0,0,0,0.12)',
+            background: 'var(--bg2)',
+            borderColor: 'var(--border-custom)',
             color: t1,
-          }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = '#22c55e';
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = theme === 'dark' ? 'rgba(34,197,94,0.2)' : 'rgba(0,0,0,0.12)';
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24">
@@ -88,17 +79,14 @@ export default function LoginForm({ onSubmit, loading, error }: Props) {
         </button>
       </div>
 
-      {/* Divider */}
       <div className="flex items-center gap-3 auth-anim-2 mb-5">
         <div className="flex-1 h-px" style={{ background: divider }} />
         <span className="text-[10px] font-medium tracking-[1.5px] uppercase" style={{ color: t3 }}>or sign in with email</span>
         <div className="flex-1 h-px" style={{ background: divider }} />
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
 
-        {/* Email */}
         <div className="auth-anim-3">
           <label className="block text-[10px] font-semibold tracking-[1.4px] uppercase mb-1.5" style={{ color: labelColor }}>
             Email Address
@@ -107,14 +95,12 @@ export default function LoginForm({ onSubmit, loading, error }: Props) {
             type="email"
             placeholder="you@example.com"
             className={`auth-field${errors.email ? ' !border-red-500' : ''}`}
-            
             value={form.email}
             onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
           />
           {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
         </div>
 
-        {/* Password */}
         <div className="auth-anim-3">
           <label className="block text-[10px] font-semibold tracking-[1.4px] uppercase mb-1.5" style={{ color: labelColor }}>
             Password
@@ -134,13 +120,12 @@ export default function LoginForm({ onSubmit, loading, error }: Props) {
               className="absolute right-3.5 top-1/2 -translate-y-1/2 transition-colors"
               style={{ color: t3 }}
             >
-{showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+              {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
           {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
         </div>
 
-        {/* Remember + Forgot */}
         <div className="flex items-center justify-between auth-anim-3">
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
@@ -157,7 +142,6 @@ export default function LoginForm({ onSubmit, loading, error }: Props) {
           </a>
         </div>
 
-        {/* Server error */}
         {error && (
           <div
             className="rounded-lg px-4 py-3 text-sm border"
@@ -167,7 +151,6 @@ export default function LoginForm({ onSubmit, loading, error }: Props) {
           </div>
         )}
 
-        {/* Submit — full width */}
         <div className="auth-anim-4">
           <button
             type="submit"
@@ -179,7 +162,7 @@ export default function LoginForm({ onSubmit, loading, error }: Props) {
             ) : (
               <>
                 Sign In
-<ArrowRight size={15} strokeWidth={2.5} />
+                <ArrowRight size={15} strokeWidth={2.5} />
               </>
             )}
           </button>
@@ -187,7 +170,6 @@ export default function LoginForm({ onSubmit, loading, error }: Props) {
 
       </form>
 
-      {/* Footer */}
       <p className="text-center text-xs mt-8 auth-anim-5" style={{ color: t2 }}>
         Don't have an account?{' '}
         <a href="/register" className="font-semibold" style={{ color: link }}>
@@ -195,7 +177,6 @@ export default function LoginForm({ onSubmit, loading, error }: Props) {
         </a>
       </p>
 
-      {/* Role hints */}
       <div className="mt-5 flex items-center justify-center gap-3 flex-wrap auth-anim-5">
         <span className="text-[10px] tracking-wider uppercase" style={{ color: t3 }}>Join as</span>
         {['🛍️ Buyer', '🏪 Seller', '🏭 Wholesale'].map(r => (

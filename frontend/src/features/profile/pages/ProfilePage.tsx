@@ -71,7 +71,6 @@ const since = (value: string) => {
 
 export default function ProfilePage() {
   const { theme } = useTheme();
-  const isDark = theme === 'dark';
 
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
@@ -84,15 +83,13 @@ export default function ProfilePage() {
   const [drafts, setDrafts] = useState<ProductDraft[]>([]);
   const [publishError, setPublishError] = useState<string | null>(null);
 
-  const surface = isDark ? 'bg-neutral-950 border border-white/10 text-white' : 'bg-white border border-black/10 text-neutral-900';
-  const muted = isDark ? 'text-white/65' : 'text-black/60';
-  const subtle = isDark ? 'bg-white/5 border-white/10' : 'bg-black/[0.03] border-black/10';
-  const chip = isDark ? 'bg-white/10 text-white/80' : 'bg-black/10 text-black/70';
-  const input = isDark
-    ? 'bg-black/40 border-white/15 text-white placeholder:text-white/35'
-    : 'bg-white border-black/15 text-black placeholder:text-black/40';
-  const skeletonBase = isDark ? 'bg-white/10' : 'bg-black/10';
-  const skeletonSoft = isDark ? 'bg-white/6' : 'bg-black/6';
+  const surface = 'border rounded-2xl';
+  const muted = 'text-sm';
+  const subtle = 'border rounded-xl';
+  const chip = 'rounded-full px-2 py-1 text-xs font-medium';
+  const input = 'rounded-lg border px-3';
+  const skeletonBase = 'rounded';
+  const skeletonSoft = 'rounded';
 
   useEffect(() => {
     const controller = new AbortController();
@@ -277,9 +274,9 @@ export default function ProfilePage() {
 
   return (
     <AppLayout>
-      <div className={`min-h-screen p-4 md:p-6 lg:p-8 ${isDark ? 'bg-black text-white' : 'bg-[#f5f7fb] text-neutral-900'}`}>
+      <div className={`min-h-screen p-4 md:p-6 lg:p-8 ${theme === 'dark' ? 'bg-black text-white' : 'bg-[#f5f7fb] text-neutral-900'}`}>
         <section className={`relative overflow-hidden rounded-2xl ${surface}`}>
-          <div className={`h-44 md:h-56 w-full ${isDark ? 'bg-gradient-to-r from-green-500/25 via-emerald-500/20 to-cyan-500/25' : 'bg-gradient-to-r from-green-500/30 via-emerald-500/20 to-blue-500/20'}`} />
+          <div className={`h-44 md:h-56 w-full ${theme === 'dark' ? 'bg-gradient-to-r from-green-500/25 via-emerald-500/20 to-cyan-500/25' : 'bg-gradient-to-r from-green-500/30 via-emerald-500/20 to-blue-500/20'}`} />
           <div className="px-5 pb-5 md:px-8 md:pb-7">
             <div className="-mt-14 md:-mt-16 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="flex items-end gap-4">
@@ -371,7 +368,7 @@ export default function ProfilePage() {
                 {featuredProducts.map(product => (
                   <article key={product.name} className={`rounded-xl border p-3 ${subtle}`}>
                     <div className="flex gap-3">
-                      <div className={`w-36 sm:w-44 h-20 rounded-lg flex-shrink-0 grid place-items-center text-xs font-semibold ${isDark ? 'bg-neutral-900 text-white/70' : 'bg-neutral-200 text-black/60'}`}>
+                      <div className={`w-36 sm:w-44 h-20 rounded-lg flex-shrink-0 grid place-items-center text-xs font-semibold ${theme === 'dark' ? 'bg-neutral-900 text-white/70' : 'bg-neutral-200 text-black/60'}`}>
                         {product.tag}
                       </div>
                       <div className="min-w-0">

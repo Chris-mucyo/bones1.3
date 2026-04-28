@@ -13,7 +13,6 @@ interface ApiResponse {
 
 export default function ListingsPage() {
   const { theme } = useTheme();
-  const isDark = theme === 'dark';
   const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState<string[]>(['All']);
 
@@ -65,15 +64,15 @@ export default function ListingsPage() {
           else next.set('category', cat);
           setSearchParams(next);
         }}
-        isDark={isDark}
+        isDark={theme === 'dark'}
       />
 
-      <div className={`min-h-screen px-5 py-5 ${isDark ? 'bg-black text-white' : 'bg-[#f7f9fc] text-black'}`}>
-        <section className={`rounded-2xl border p-4 md:p-5 ${isDark ? 'border-white/10 bg-white/[0.03]' : 'border-black/10 bg-white'}`}>
+      <div className="min-h-screen px-5 py-5" style={{ background: 'var(--bg)', color: 'var(--text1)' }}>
+        <section className="rounded-2xl border p-4 md:p-5" style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)' }}>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
               <h1 className="font-['Playfair_Display'] text-2xl font-bold">{heading}</h1>
-              <p className={`text-sm mt-1 ${isDark ? 'text-white/60' : 'text-black/60'}`}>
+              <p className="text-sm mt-1" style={{ color: 'var(--text2)' }}>
                 Discover social-influence products and high-conversion commerce picks.
               </p>
             </div>
@@ -86,11 +85,12 @@ export default function ListingsPage() {
                 setSearchParams(next);
               }}
               placeholder="Search listings..."
-              className={`w-full md:w-80 rounded-xl border px-3 py-2 text-sm outline-none ${
-                isDark
-                  ? 'border-white/10 bg-white/5 text-white placeholder:text-white/40'
-                  : 'border-black/10 bg-black/[0.02] text-black placeholder:text-black/40'
-              }`}
+              className="w-full md:w-80 rounded-xl border px-3 py-2 text-sm outline-none"
+              style={{
+                borderColor: 'var(--border-custom)',
+                background: 'var(--bg2)',
+                color: 'var(--text1)',
+              }}
             />
           </div>
         </section>
@@ -102,7 +102,7 @@ export default function ListingsPage() {
             badge={queryBadge}
             sort={querySort}
             loaderStyle={loaderStyle}
-            isDark={isDark}
+            isDark={theme === 'dark'}
           />
         </div>
       </div>

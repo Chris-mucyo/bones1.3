@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import AppLayout from '../../../shared/layouts/AppLayout';
-import { useTheme } from '../../../shared/components/ThemeProvider';
 import type { Listing } from '../types';
 
-type RoleFilter = 'all' | 'buyer' | 'seller' | 'Wholesaler';
 type ViewerRole = 'buyer' | 'seller' | 'Wholesaler' | 'unknown';
 
 interface RankedEntity {
@@ -24,10 +22,10 @@ function getToken(): string | null {
 }
 
 function parseRoleFromToken(token: string | null): ViewerRole {
-  if (!token) return 'all';
+  if (!token) return 'unknown';
   try {
     const base64 = token.split('.')[1];
-    if (!base64) return 'all';
+    if (!base64) return 'unknown';
     const padded = base64.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(base64.length / 4) * 4, '=');
     const payload = JSON.parse(atob(padded)) as { role?: string };
     if (payload.role === 'buyer' || payload.role === 'seller' || payload.role === 'Wholesaler') return payload.role;
@@ -72,8 +70,7 @@ function normalizeTopEntities(payload: unknown): RankedEntity[] {
 }
 
 export default function TopSellersPage() {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  
   const viewerRole = parseRoleFromToken(getToken());
   const viewerId = parseUserIdFromToken(getToken());
   const [rows, setRows] = useState<RankedEntity[]>([]);
@@ -163,23 +160,19 @@ export default function TopSellersPage() {
     return withoutSelf;
   }, [rows, viewerRole, viewerId]);
 
-  const surface = isDark ? 'bg-neutral-950 border border-white/10 text-white' : 'bg-white border border-black/10 text-black';
-  const soft = isDark ? 'bg-white/5 border-white/10' : 'bg-black/[0.03] border-black/10';
-  const muted = isDark ? 'text-white/60' : 'text-black/60';
-  const chip = isDark ? 'bg-white/10 text-white/85' : 'bg-black/10 text-black';
 
   return (
     <AppLayout>
-      <div className={`min-h-screen px-5 py-6 ${isDark ? 'bg-black text-white' : 'bg-[#f7f9fc] text-black'}`}>
-        <section className={`rounded-2xl p-5 md:p-6 ${surface}`}>
+      <div className="min-h-screen px-5 py-6" style={{ background: 'var(--bg)', color: 'var(--text1)' }}>
+        <section className="rounded-2xl p-5 md:p-6" style={{ background: 'var(--bg)', border: '1px solid var(--border-custom)' }}>
           <h1 className="font-['Playfair_Display'] text-2xl md:text-3xl font-bold">Top Sellers & Wholesalers</h1>
-          <p className={`mt-2 text-sm md:text-base ${muted}`}>
+          <p className="mt-2 text-sm md:text-base" style={{ color: 'var(--text2)' }}>
             Verified seller and wholesaler leaderboard with trending product influence.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <span className={`rounded-full px-3 py-1 text-xs ${chip}`}>Verified profiles prioritized</span>
-            <span className={`rounded-full px-3 py-1 text-xs ${chip}`}>Trending products included</span>
-            <span className={`rounded-full px-3 py-1 text-xs ${chip}`}>
+            <span className="rounded-full px-3 py-1 text-xs" style={{ background: 'var(--bg2)', border: '1px solid var(--border-custom)', color: 'var(--text3)' }}>Verified profiles prioritized</span>
+            <span className="rounded-full px-3 py-1 text-xs" style={{ background: 'var(--bg2)', border: '1px solid var(--border-custom)', color: 'var(--text3)' }}>Trending products included</span>
+            <span className="rounded-full px-3 py-1 text-xs" style={{ background: 'var(--bg2)', border: '1px solid var(--border-custom)', color: 'var(--text3)' }}>
               {viewerRole === 'buyer'
                 ? 'Buyer view: sellers only'
                 : viewerRole === 'seller'
@@ -193,21 +186,21 @@ export default function TopSellersPage() {
 
         <section className="mt-5 space-y-3">
           {loading && (
-            <div className={`rounded-xl border p-4 text-sm ${soft} ${muted}`}>Loading leaderboard...</div>
+            <div className="rounded-xl border p-4 text-sm" style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)', color: 'var(--text2)' }}>Loading leaderboard...</div>
           )}
 
           {!loading && !filtered.length && (
-            <div className={`rounded-xl border p-4 text-sm ${soft} ${muted}`}>
+            <div className="rounded-xl border p-4 text-sm" style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)', color: 'var(--text2)' }}>
               No ranked profiles available for this role yet.
             </div>
           )}
 
           {!loading &&
             filtered.map((row, idx) => (
-              <article key={row.id} className={`rounded-xl border p-4 ${surface}`}>
+              <article key={row.id} className="rounded-xl border p-4" style={{ background: 'var(--bg)', borderColor: 'var(--border-custom)' }}>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                   <div className="flex items-center gap-3">
-                    <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${chip}`}>
+                    <span className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'var(--bg2)', border: '1px solid var(--border-custom)', color: 'var(--text3)' }}>
                       #{idx + 1}
                     </span>
                     <div>
@@ -225,24 +218,24 @@ export default function TopSellersPage() {
                 </div>
 
                 <div className="mt-3 grid grid-cols-2 md:grid-cols-5 gap-2">
-                  <div className={`rounded-lg border p-2.5 ${soft}`}>
-                    <p className={`text-[11px] ${muted}`}>Sales</p>
+                  <div className="rounded-lg border p-2.5" style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)' }}>
+                    <p className="text-[11px]" style={{ color: 'var(--text2)' }}>Sales</p>
                     <p className="text-sm font-semibold">{row.totalSales.toLocaleString()}</p>
                   </div>
-                  <div className={`rounded-lg border p-2.5 ${soft}`}>
-                    <p className={`text-[11px] ${muted}`}>Products</p>
+                  <div className="rounded-lg border p-2.5" style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)' }}>
+                    <p className="text-[11px]" style={{ color: 'var(--text2)' }}>Products</p>
                     <p className="text-sm font-semibold">{row.productsCount}</p>
                   </div>
-                  <div className={`rounded-lg border p-2.5 ${soft}`}>
-                    <p className={`text-[11px] ${muted}`}>Trending products</p>
+                  <div className="rounded-lg border p-2.5" style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)' }}>
+                    <p className="text-[11px]" style={{ color: 'var(--text2)' }}>Trending products</p>
                     <p className="text-sm font-semibold">{row.trendingProducts}</p>
                   </div>
-                  <div className={`rounded-lg border p-2.5 ${soft}`}>
-                    <p className={`text-[11px] ${muted}`}>Rating</p>
+                  <div className="rounded-lg border p-2.5" style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)' }}>
+                    <p className="text-[11px]" style={{ color: 'var(--text2)' }}>Rating</p>
                     <p className="text-sm font-semibold">{row.avgRating ? row.avgRating.toFixed(1) : '-'}</p>
                   </div>
-                  <div className={`rounded-lg border p-2.5 ${soft}`}>
-                    <p className={`text-[11px] ${muted}`}>Trust tier</p>
+                  <div className="rounded-lg border p-2.5" style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)' }}>
+                    <p className="text-[11px]" style={{ color: 'var(--text2)' }}>Trust tier</p>
                     <p className="text-sm font-semibold">{row.verified ? 'High' : 'Standard'}</p>
                   </div>
                 </div>

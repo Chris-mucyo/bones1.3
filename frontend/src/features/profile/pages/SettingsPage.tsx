@@ -11,7 +11,6 @@ interface CurrentUser {
 
 export default function SettingsPage() {
   const { theme, toggle } = useTheme();
-  const isDark = theme === 'dark';
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -53,11 +52,6 @@ export default function SettingsPage() {
     return () => controller.abort();
   }, []);
 
-  const surface = isDark ? 'bg-neutral-950 border border-white/10 text-white' : 'bg-white border border-black/10 text-black';
-  const soft = isDark ? 'bg-white/5 border-white/10' : 'bg-black/[0.03] border-black/10';
-  const muted = isDark ? 'text-white/60' : 'text-black/60';
-  const input = isDark ? 'bg-black/40 border-white/15 text-white' : 'bg-white border-black/15 text-black';
-
   const socialCommerceScore = useMemo(() => {
     let score = 50;
     if (autoBoostTrending) score += 10;
@@ -76,6 +70,22 @@ export default function SettingsPage() {
     acceptWholesaleRequests,
     contentMode,
   ]);
+
+  const scoreColor =
+    socialCommerceScore >= 80
+      ? '#22c55e'
+      : socialCommerceScore >= 50
+      ? '#f59e0b'
+      : '#ef4444';
+
+  const scoreLabel =
+    socialCommerceScore >= 80
+      ? 'Excellent — fully optimized'
+      : socialCommerceScore >= 60
+      ? 'Good — a few tweaks left'
+      : socialCommerceScore >= 40
+      ? 'Fair — enable more features'
+      : 'Low — review your settings';
 
   const roleHint =
     user?.role === 'buyer'
@@ -97,16 +107,17 @@ export default function SettingsPage() {
     value: boolean;
     onChange: (value: boolean) => void;
   }) => (
-    <div className={`rounded-xl border p-3 ${soft}`}>
+    <div className="rounded-xl border p-3" style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)' }}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold">{label}</p>
-          <p className={`text-xs mt-1 ${muted}`}>{description}</p>
+          <p className="text-xs mt-1" style={{ color: 'var(--text2)' }}>{description}</p>
         </div>
         <button
           type="button"
           onClick={() => onChange(!value)}
-          className={`relative h-6 w-11 rounded-full transition-colors ${value ? 'bg-green-500' : isDark ? 'bg-white/20' : 'bg-black/20'}`}
+          className="relative h-6 w-11 rounded-full transition-colors"
+          style={{ background: value ? 'var(--link)' : 'var(--bg)' }}
         >
           <span
             className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all duration-300 ${
@@ -120,57 +131,64 @@ export default function SettingsPage() {
 
   return (
     <AppLayout>
-      <div className={`min-h-screen p-4 md:p-6 lg:p-8 ${isDark ? 'bg-black text-white' : 'bg-[#f7f9fc] text-black'}`}>
-        <section className={`rounded-2xl p-5 md:p-6 ${surface}`}>
+      <div className="min-h-screen p-4 md:p-6 lg:p-8" style={{ background: 'var(--bg)', color: 'var(--text1)' }}>
+        <section className="rounded-2xl p-5 md:p-6" style={{ background: 'var(--bg)', border: '1px solid var(--border-custom)' }}>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="font-['Playfair_Display'] text-2xl md:text-3xl font-bold">Settings</h1>
-              <p className={`mt-1 text-sm md:text-base ${muted}`}>{roleHint}</p>
-              <p className={`mt-2 text-xs ${muted}`}>
+              <p className="mt-1 text-sm md:text-base" style={{ color: 'var(--text2)' }}>{roleHint}</p>
+              <p className="mt-2 text-xs" style={{ color: 'var(--text2)' }}>
                 {loading ? 'Loading account...' : `${user?.name ?? 'Unknown'} • ${user?.role ?? 'guest'}`}
               </p>
             </div>
-            <button type="button" className="rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-black hover:bg-green-400 transition-colors">
+            <button
+              type="button"
+              className="rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-black hover:bg-green-400 transition-colors"
+            >
               Save all changes
             </button>
           </div>
         </section>
 
         <div className="mt-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+          {/* ── Main content ── */}
           <section className="xl:col-span-8 space-y-6">
-            <article className={`rounded-2xl p-5 ${surface}`}>
+
+            {/* Appearance */}
+            <article className="rounded-2xl p-5" style={{ background: 'var(--bg)', border: '1px solid var(--border-custom)' }}>
               <h2 className="text-lg font-semibold mb-4">Appearance & accessibility</h2>
-              <div className={`rounded-xl border p-3 mb-4 ${soft}`}>
+              <div className="rounded-xl border p-3 mb-4" style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)' }}>
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold">Dark / Light mode</p>
-                    <p className={`text-xs mt-1 ${muted}`}>Switch app theme with a smooth toggle.</p>
+                    <p className="text-xs mt-1" style={{ color: 'var(--text2)' }}>Switch app theme with a smooth toggle.</p>
                   </div>
                   <button
                     type="button"
                     onClick={toggle}
                     aria-label="Toggle dark mode"
                     className={`relative h-8 w-16 rounded-full transition-colors duration-300 ${
-                      isDark ? 'bg-green-500' : 'bg-black/20'
+                      theme === 'dark' ? 'bg-green-500' : 'bg-black/20'
                     }`}
                   >
                     <span
                       className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow-sm transition-all duration-300 ${
-                        isDark ? 'left-8.5' : 'left-1'
+                        theme === 'dark' ? 'left-8.5' : 'left-1'
                       }`}
                     />
-                   
                   </button>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                 <label className="text-sm">
-                  <span className={`block mb-1 ${muted}`}>App language</span>
+                  <span className="block mb-1" style={{ color: 'var(--text2)' }}>App language</span>
                   <select
                     value={language}
                     onChange={e => setLanguage(e.target.value)}
-                    className={`w-full h-10 rounded-lg border px-3 text-sm ${input}`}
+                    className="w-full h-10 rounded-lg border px-3 text-sm"
+                    style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)', color: 'var(--text1)' }}
                   >
                     <option>English</option>
                     <option>French</option>
@@ -179,75 +197,45 @@ export default function SettingsPage() {
                 </label>
 
                 <label className="text-sm">
-                  <span className={`block mb-1 ${muted}`}>Font scale (%)</span>
+                  <span className="block mb-1" style={{ color: 'var(--text2)' }}>Font scale (%)</span>
                   <input
                     value={fontScale}
                     onChange={e => setFontScale(e.target.value)}
-                    className={`w-full h-10 rounded-lg border px-3 text-sm ${input}`}
+                    className="w-full h-10 rounded-lg border px-3 text-sm"
+                    style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)', color: 'var(--text1)' }}
                   />
                 </label>
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Toggle
-                  label="Compact mode"
-                  description="Show denser feed and settings rows for power users."
-                  value={compactMode}
-                  onChange={setCompactMode}
-                />
-                <Toggle
-                  label="High contrast text"
-                  description="Improve readability for long browsing sessions."
-                  value={highContrastText}
-                  onChange={setHighContrastText}
-                />
-                <Toggle
-                  label="Auto-play product previews"
-                  description="Play social product clips while scrolling."
-                  value={autoPlayPreviews}
-                  onChange={setAutoPlayPreviews}
-                />
+                <Toggle label="Compact mode" description="Show denser feed and settings rows for power users." value={compactMode} onChange={setCompactMode} />
+                <Toggle label="High contrast text" description="Improve readability for long browsing sessions." value={highContrastText} onChange={setHighContrastText} />
+                <Toggle label="Auto-play product previews" description="Play social product clips while scrolling." value={autoPlayPreviews} onChange={setAutoPlayPreviews} />
               </div>
             </article>
 
-            <article className={`rounded-2xl p-5 ${surface}`}>
+            {/* Social influence */}
+            <article className="rounded-2xl p-5" style={{ background: 'var(--bg)', border: '1px solid var(--border-custom)' }}>
               <h2 className="text-lg font-semibold mb-4">Social influence controls</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Toggle
-                  label="Auto-boost trending products"
-                  description="Prioritize products with high saves, shares, and engagement."
-                  value={autoBoostTrending}
-                  onChange={setAutoBoostTrending}
-                />
-                <Toggle
-                  label="Show verified status publicly"
-                  description="Display verification trust marker on profile and listings."
-                  value={showVerifiedBadge}
-                  onChange={setShowVerifiedBadge}
-                />
-                <Toggle
-                  label="Allow affiliate tags"
-                  description="Enable creator partnerships and commission tagging."
-                  value={allowAffiliateTags}
-                  onChange={setAllowAffiliateTags}
-                />
-                <Toggle
-                  label="Public profile visibility"
-                  description="Allow discovery through social feed and top seller boards."
-                  value={publicProfile}
-                  onChange={setPublicProfile}
-                />
+                <Toggle label="Auto-boost trending products" description="Prioritize products with high saves, shares, and engagement." value={autoBoostTrending} onChange={setAutoBoostTrending} />
+                <Toggle label="Show verified status publicly" description="Display verification trust marker on profile and listings." value={showVerifiedBadge} onChange={setShowVerifiedBadge} />
+                <Toggle label="Allow affiliate tags" description="Enable creator partnerships and commission tagging." value={allowAffiliateTags} onChange={setAllowAffiliateTags} />
+                <Toggle label="Public profile visibility" description="Allow discovery through social feed and top seller boards." value={publicProfile} onChange={setPublicProfile} />
               </div>
             </article>
 
-            <article className={`rounded-2xl p-5 ${surface}`}>
+            {/* E-commerce strategy */}
+            <article className="rounded-2xl p-5" style={{ background: 'var(--bg)', border: '1px solid var(--border-custom)' }}>
               <h2 className="text-lg font-semibold mb-4">E-commerce strategy</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                 <label className="text-sm">
-                  <span className={`block mb-1 ${muted}`}>Content mode</span>
+                  <span className="block mb-1" style={{ color: 'var(--text2)' }}>Content mode</span>
                   <select
                     value={contentMode}
                     onChange={e => setContentMode(e.target.value as 'balanced' | 'social-first' | 'commerce-first')}
-                    className={`w-full h-10 rounded-lg border px-3 text-sm ${input}`}
+                    className="w-full h-10 rounded-lg border px-3 text-sm"
+                    style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)', color: 'var(--text1)' }}
                   >
                     <option value="balanced">Balanced</option>
                     <option value="social-first">Social-first</option>
@@ -256,139 +244,111 @@ export default function SettingsPage() {
                 </label>
 
                 <label className="text-sm">
-                  <span className={`block mb-1 ${muted}`}>Default markup (%)</span>
+                  <span className="block mb-1" style={{ color: 'var(--text2)' }}>Default markup (%)</span>
                   <input
                     value={defaultMarkup}
                     onChange={e => setDefaultMarkup(e.target.value)}
-                    className={`w-full h-10 rounded-lg border px-3 text-sm ${input}`}
+                    className="w-full h-10 rounded-lg border px-3 text-sm"
+                    style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)', color: 'var(--text1)' }}
                   />
                 </label>
 
                 <label className="text-sm">
-                  <span className={`block mb-1 ${muted}`}>Daily ad budget (RWF)</span>
+                  <span className="block mb-1" style={{ color: 'var(--text2)' }}>Daily ad budget (RWF)</span>
                   <input
                     value={dailyAdBudget}
                     onChange={e => setDailyAdBudget(e.target.value)}
-                    className={`w-full h-10 rounded-lg border px-3 text-sm ${input}`}
+                    className="w-full h-10 rounded-lg border px-3 text-sm"
+                    style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)', color: 'var(--text1)' }}
                   />
                 </label>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Toggle
-                  label="Show inventory urgency signals"
-                  description="Display low-stock urgency to increase conversion."
-                  value={showInventorySignals}
-                  onChange={setShowInventorySignals}
-                />
-                <Toggle
-                  label="Accept wholesale requests"
-                  description="Enable B2B inquiries from verified bulk buyers."
-                  value={acceptWholesaleRequests}
-                  onChange={setAcceptWholesaleRequests}
-                />
+                <Toggle label="Show inventory urgency signals" description="Display low-stock urgency to increase conversion." value={showInventorySignals} onChange={setShowInventorySignals} />
+                <Toggle label="Accept wholesale requests" description="Enable B2B inquiries from verified bulk buyers." value={acceptWholesaleRequests} onChange={setAcceptWholesaleRequests} />
               </div>
             </article>
 
-            <article className={`rounded-2xl p-5 ${surface}`}>
+            {/* Privacy */}
+            <article className="rounded-2xl p-5" style={{ background: 'var(--bg)', border: '1px solid var(--border-custom)' }}>
               <h2 className="text-lg font-semibold mb-4">Privacy & messaging</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Toggle
-                  label="Read receipts"
-                  description="Let other users know when you viewed messages."
-                  value={readReceipts}
-                  onChange={setReadReceipts}
-                />
-                <Toggle
-                  label="Last seen visibility"
-                  description="Show your online activity to connections."
-                  value={lastSeenVisibility}
-                  onChange={setLastSeenVisibility}
-                />
-                <Toggle
-                  label="Story and short replies"
-                  description="Allow replies to stories and product shorts."
-                  value={storyReplies}
-                  onChange={setStoryReplies}
-                />
-                <Toggle
-                  label="Auto-download media"
-                  description="Download images/videos automatically on Wi-Fi."
-                  value={autoDownloadMedia}
-                  onChange={setAutoDownloadMedia}
-                />
+                <Toggle label="Read receipts" description="Let other users know when you viewed messages." value={readReceipts} onChange={setReadReceipts} />
+                <Toggle label="Last seen visibility" description="Show your online activity to connections." value={lastSeenVisibility} onChange={setLastSeenVisibility} />
+                <Toggle label="Story and short replies" description="Allow replies to stories and product shorts." value={storyReplies} onChange={setStoryReplies} />
+                <Toggle label="Auto-download media" description="Download images/videos automatically on Wi-Fi." value={autoDownloadMedia} onChange={setAutoDownloadMedia} />
               </div>
             </article>
           </section>
 
+          {/* ── Sidebar ── */}
           <aside className="xl:col-span-4 space-y-6">
-            <article className={`rounded-2xl p-5 ${surface}`}>
+
+            {/* Social Commerce Score */}
+            <article className="rounded-2xl p-5" style={{ background: 'var(--bg)', border: '1px solid var(--border-custom)' }}>
+              <h2 className="text-lg font-semibold mb-1">Social commerce score</h2>
+              <p className="text-xs mb-4" style={{ color: 'var(--text2)' }}>
+                Based on your current settings
+              </p>
+
+              <div className="flex items-end gap-2 mb-3">
+                <span className="text-5xl font-bold" style={{ color: scoreColor }}>
+                  {socialCommerceScore}
+                </span>
+                <span className="text-lg mb-1" style={{ color: 'var(--text2)' }}>/100</span>
+              </div>
+
+              <div
+                className="w-full h-2.5 rounded-full overflow-hidden mb-3"
+                style={{ background: 'var(--bg2)' }}
+              >
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${socialCommerceScore}%`, background: scoreColor }}
+                />
+              </div>
+
+              <p className="text-xs font-semibold" style={{ color: scoreColor }}>
+                {scoreLabel}
+              </p>
+            </article>
+
+            {/* Security */}
+            <article className="rounded-2xl p-5" style={{ background: 'var(--bg)', border: '1px solid var(--border-custom)' }}>
               <h2 className="text-lg font-semibold mb-3">Security</h2>
               <div className="space-y-3">
-                <Toggle
-                  label="Two-factor authentication"
-                  description="Add an extra verification step at login."
-                  value={twoFactorAuth}
-                  onChange={setTwoFactorAuth}
-                />
-                <Toggle
-                  label="Login alerts"
-                  description="Notify when your account signs in from a new device."
-                  value={loginAlerts}
-                  onChange={setLoginAlerts}
-                />
+                <Toggle label="Two-factor authentication" description="Add an extra verification step at login." value={twoFactorAuth} onChange={setTwoFactorAuth} />
+                <Toggle label="Login alerts" description="Notify when your account signs in from a new device." value={loginAlerts} onChange={setLoginAlerts} />
               </div>
-              <div className={`rounded-lg border p-3 text-sm mt-3 ${soft}`}>
+              <div className="rounded-lg border p-3 text-sm mt-3" style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)' }}>
                 <p className="font-semibold">Active sessions</p>
-                <p className={`${muted} mt-1`}>Kigali (Windows) • Mobile app session • Last seen 8 min ago</p>
+                <p className="mt-1" style={{ color: 'var(--text2)' }}>Kigali (Windows) • Mobile app session • Last seen 8 min ago</p>
               </div>
             </article>
 
-            <article className={`rounded-2xl p-5 ${surface}`}>
+            {/* Notifications */}
+            <article className="rounded-2xl p-5" style={{ background: 'var(--bg)', border: '1px solid var(--border-custom)' }}>
               <h2 className="text-lg font-semibold mb-3">Notification settings</h2>
               <div className="space-y-3">
-                <Toggle
-                  label="Order alerts"
-                  description="Push notifications for new orders and status updates."
-                  value={orderAlerts}
-                  onChange={setOrderAlerts}
-                />
-                <Toggle
-                  label="Message alerts"
-                  description="Buyer/seller/wholesaler chat message notifications."
-                  value={messageAlerts}
-                  onChange={setMessageAlerts}
-                />
-                <Toggle
-                  label="Campaign alerts"
-                  description="Promotion performance and trend movement alerts."
-                  value={campaignAlerts}
-                  onChange={setCampaignAlerts}
-                />
-                <Toggle
-                  label="Desktop notifications"
-                  description="Receive notifications directly in browser/desktop app."
-                  value={desktopNotifications}
-                  onChange={setDesktopNotifications}
-                />
-                <Toggle
-                  label="Email digest"
-                  description="Daily recap for sales, trends, and messages."
-                  value={emailDigest}
-                  onChange={setEmailDigest}
-                />
+                <Toggle label="Order alerts" description="Push notifications for new orders and status updates." value={orderAlerts} onChange={setOrderAlerts} />
+                <Toggle label="Message alerts" description="Buyer/seller/wholesaler chat message notifications." value={messageAlerts} onChange={setMessageAlerts} />
+                <Toggle label="Campaign alerts" description="Promotion performance and trend movement alerts." value={campaignAlerts} onChange={setCampaignAlerts} />
+                <Toggle label="Desktop notifications" description="Receive notifications directly in browser/desktop app." value={desktopNotifications} onChange={setDesktopNotifications} />
+                <Toggle label="Email digest" description="Daily recap for sales, trends, and messages." value={emailDigest} onChange={setEmailDigest} />
               </div>
             </article>
 
-            <article className={`rounded-2xl p-5 ${surface}`}>
+            {/* Payout */}
+            <article className="rounded-2xl p-5" style={{ background: 'var(--bg)', border: '1px solid var(--border-custom)' }}>
               <h2 className="text-lg font-semibold mb-3">Payout and billing</h2>
-              <div className={`rounded-lg border p-3 text-sm ${soft}`}>
+              <div className="rounded-lg border p-3 text-sm" style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)' }}>
                 <p className="font-semibold">Primary payout method</p>
-                <p className={`${muted} mt-1`}>Mobile Money (MTN)</p>
+                <p className="mt-1" style={{ color: 'var(--text2)' }}>Mobile Money (MTN)</p>
               </div>
-              <div className={`rounded-lg border p-3 text-sm mt-3 ${soft}`}>
+              <div className="rounded-lg border p-3 text-sm mt-3" style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)' }}>
                 <p className="font-semibold">Settlement cycle</p>
-                <p className={`${muted} mt-1`}>Every 3 business days</p>
+                <p className="mt-1" style={{ color: 'var(--text2)' }}>Every 3 business days</p>
               </div>
             </article>
           </aside>

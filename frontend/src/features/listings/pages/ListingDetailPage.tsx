@@ -21,7 +21,6 @@ interface ListingDetail extends Listing {
   isSaved: boolean;
 }
 
-// ── Stubbed API calls — swap out fetch() bodies when backend is live ──
 const api = {
   getListing: async (id: string): Promise<ListingDetail> => {
     const { data } = await axios.get<ListingDetail>(`${API_BASE}/listings/${id}`);
@@ -41,17 +40,14 @@ const api = {
   },
 
   toggleLike: async (_listingId: string, liked: boolean): Promise<{ liked: boolean; likesCount: number }> => {
-    // TODO: return fetch(`${BASE_URL}/listings/${listingId}/like`, { method: liked ? 'DELETE' : 'POST', headers:{ 'Authorization': `Bearer ${localStorage.getItem('token')}` }}).then(r => r.json());
     await new Promise(r => setTimeout(r, 150));
-    return { liked: !liked, likesCount: 0 }; // count managed locally
+    return { liked: !liked, likesCount: 0 };
   },
 
   toggleSave: async (_listingId: string, saved: boolean): Promise<{ saved: boolean }> => {
-    // TODO: return fetch(`${BASE_URL}/listings/${listingId}/save`, { method: saved ? 'DELETE' : 'POST', headers:{ 'Authorization': `Bearer ${localStorage.getItem('token')}` }}).then(r => r.json());
     await new Promise(r => setTimeout(r, 150));
     return { saved: !saved };
   },
-
 };
 
 // ── Thumbnail ─────────────────────────────────────────────
@@ -83,13 +79,16 @@ function Thumb({ index }: { index: number }) {
 // ── Suggested card ────────────────────────────────────────
 function SuggestedCard({ listing, index, isDark }: { listing: Listing; index: number; isDark: boolean }) {
   const navigate = useNavigate();
+  const sellerDisplay = listing.seller?.shopName || listing.seller?.name || 'Unknown seller';
   return (
     <div
       onClick={() => navigate(`/listing/${listing.id}`)}
-      className={`flex gap-3 cursor-pointer group rounded-xl p-2.5 transition-colors ${isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-black/[0.04]'}`}
+      className="flex gap-3 cursor-pointer group rounded-xl p-2.5 transition-colors"
+      style={{ ':hover': { background: 'rgba(0,0,0,0.04)' } } as React.CSSProperties}
+      onMouseEnter={e => (e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')}
+      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
     >
-      {/* Thumb — slightly taller for breathing room */}
-      <div className={`relative flex-shrink-0 rounded-xl overflow-hidden ${isDark ? 'bg-[#111]' : 'bg-neutral-200'}`} style={{ width: 140, height: 80 }}>
+      <div className="relative flex-shrink-0 rounded-xl overflow-hidden" style={{ width: 140, height: 80, background: '#f0f0f0' }}>
         <Thumb index={index} />
         {listing.badge && (
           <span className="absolute top-1.5 left-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded bg-green-500/90 text-black uppercase tracking-wide">
@@ -101,16 +100,15 @@ function SuggestedCard({ listing, index, isDark }: { listing: Listing; index: nu
         </div>
       </div>
 
-      {/* Info */}
       <div className="flex-1 min-w-0 py-0.5">
-        <p className={`text-[12.5px] font-semibold leading-snug line-clamp-2 mb-1.5 transition-colors ${isDark ? 'text-white/80 group-hover:text-white' : 'text-black/85 group-hover:text-black'}`}>
+        <p className="text-[12.5px] font-semibold leading-snug line-clamp-2 mb-1.5" style={{ color: 'var(--text1)' }}>
           {listing.title}
         </p>
-        <p className={`text-[11px] truncate mb-0.5 ${isDark ? 'text-white/40' : 'text-black/60'}`}>
+        <p className="text-[11px] truncate mb-0.5" style={{ color: 'var(--text2)' }}>
           {sellerDisplay}
-          {seller.verified && <span className="ml-1 text-green-500">✓</span>}
+          {listing.seller?.verified && <span className="ml-1 text-green-500">✓</span>}
         </p>
-        <p className={`text-[11px] flex items-center gap-1 ${isDark ? 'text-white/20' : 'text-black/50'}`}>
+        <p className="text-[11px] flex items-center gap-1" style={{ color: 'var(--text3)' }}>
           <Eye size={9} />{listing.views.toLocaleString()} views · {listing.createdAt}
         </p>
       </div>
@@ -122,11 +120,11 @@ function SuggestedCard({ listing, index, isDark }: { listing: Listing; index: nu
 function SkeletonMain() {
   return (
     <div className="animate-pulse">
-      <div className="w-full rounded-2xl bg-white/[0.05]" style={{ paddingTop:'56.25%' }} />
-      <div className="mt-4 h-7 bg-white/[0.05] rounded-lg w-3/4" />
-      <div className="mt-2 h-4 bg-white/[0.03] rounded w-1/2" />
+      <div className="w-full rounded-2xl" style={{ paddingTop:'56.25%', background: 'var(--bg2)' }} />
+      <div className="mt-4 h-7 rounded-lg w-3/4" style={{ background: 'var(--bg2)' }} />
+      <div className="mt-2 h-4 rounded w-1/2" style={{ background: 'var(--bg2)' }} />
       <div className="mt-4 flex gap-2">
-        {[80,60,60,100].map((w,i) => <div key={i} className="h-9 bg-white/[0.04] rounded-full" style={{ width: w }} />)}
+        {[80,60,60,100].map((w,i) => <div key={i} className="h-9 rounded-full" style={{ width: w, background: 'var(--bg2)' }} />)}
       </div>
     </div>
   );
@@ -137,11 +135,11 @@ function SkeletonSidebar() {
     <div className="space-y-3 animate-pulse">
       {[...Array(8)].map((_, i) => (
         <div key={i} className="flex gap-3 p-2.5">
-          <div className="rounded-xl bg-white/[0.05] flex-shrink-0" style={{ width:140, height:80 }} />
+          <div className="rounded-xl flex-shrink-0" style={{ width:140, height:80, background: 'var(--bg2)' }} />
           <div className="flex-1 space-y-2 pt-1">
-            <div className="h-3.5 bg-white/[0.05] rounded w-full" />
-            <div className="h-3.5 bg-white/[0.04] rounded w-4/5" />
-            <div className="h-3 bg-white/[0.03] rounded w-1/2 mt-2" />
+            <div className="h-3.5 rounded w-full" style={{ background: 'var(--bg2)' }} />
+            <div className="h-3.5 rounded w-4/5" style={{ background: 'var(--bg2)' }} />
+            <div className="h-3 rounded w-1/2 mt-2" style={{ background: 'var(--bg2)' }} />
           </div>
         </div>
       ))}
@@ -158,25 +156,37 @@ const BADGE_STYLE: Record<string, string> = {
 
 // ─────────────────────────────────────────────────────────
 export default function ListingDetailPage() {
-  const { id }   = useParams<{ id: string }>();
+  const { id }    = useParams<{ id: string }>();
   const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const isDark    = theme === 'dark';
 
   // ── Data state ───────────────────────────────────────
-  const [listing,      setListing]      = useState<ListingDetail | null>(null);
-  const [related,      setRelated]      = useState<Listing[]>([]);
-  const [loadingMain,  setLoadingMain]  = useState(true);
-  const [loadingSide,  setLoadingSide]  = useState(true);
-  const [error,        setError]        = useState<string | null>(null);
+  const [listing,     setListing]     = useState<ListingDetail | null>(null);
+  const [related,     setRelated]     = useState<Listing[]>([]);
+  const [loadingMain, setLoadingMain] = useState(true);
+  const [loadingSide, setLoadingSide] = useState(true);
+  const [error,       setError]       = useState<string | null>(null);
 
   // ── UI state ─────────────────────────────────────────
-  const [liked,        setLiked]        = useState(false);
-  const [disliked,     setDisliked]     = useState(false);
-  const [saved,        setSaved]        = useState(false);
-  const [likesCount,   setLikesCount]   = useState(0);
-  const [activeTab,    setActiveTab]    = useState<'description'|'details'|'seller'>('description');
-  const [showPhone,    setShowPhone]    = useState(false);
-  const [shareToast,   setShareToast]   = useState(false);
+  const [liked,      setLiked]      = useState(false);
+  const [disliked,   setDisliked]   = useState(false);
+  const [saved,      setSaved]      = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [activeTab,  setActiveTab]  = useState<'description'|'details'|'seller'>('description');
+  const [showPhone,  setShowPhone]  = useState(false);
+  const [shareToast, setShareToast] = useState(false);
+
+  // ── Theme class helpers ──────────────────────────────
+  const mutedText  = isDark ? 'text-white/40'  : 'text-black/55';
+  const cardBg     = isDark ? 'bg-[#111]'      : 'bg-white';
+  const cardBorder = isDark ? 'border-white/[0.07]' : 'border-black/10';
+  const cardTone   = `${cardBg} border ${cardBorder}`;
+  const softButton = isDark
+    ? 'border border-white/[0.1] text-white/60 hover:bg-white/[0.06] hover:text-white'
+    : 'border border-black/10 text-black/70 hover:bg-black/[0.06] hover:text-black';
+  const borderTone = isDark ? 'border-white/[0.07]' : 'border-black/[0.08]';
+  const tabIdle    = isDark ? 'text-white/35'  : 'text-black/50';
+  const divider    = isDark ? 'bg-white/[0.07]' : 'bg-black/[0.08]';
 
   // ── Fetch listing ────────────────────────────────────
   const fetchListing = async (listingId: string) => {
@@ -199,18 +209,16 @@ export default function ListingDetailPage() {
     try {
       const data = await api.getRelated(listingId, category);
       setRelated(data);
-    } catch { /* silent — sidebar can fail gracefully */ }
+    } catch { /* silent */ }
     finally { setLoadingSide(false); }
   };
 
   useEffect(() => {
     if (!id) return;
-    // Reset UI
     setListing(null); setRelated([]);
     setLiked(false); setDisliked(false); setSaved(false);
     setActiveTab('description'); setShowPhone(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Fetch all
     fetchListing(id);
   }, [id]);
 
@@ -222,14 +230,12 @@ export default function ListingDetailPage() {
   const handleLike = async () => {
     if (!listing) return;
     const wasLiked = liked;
-    // Optimistic update
     setLiked(!wasLiked);
     if (disliked) setDisliked(false);
     setLikesCount(n => wasLiked ? n - 1 : n + 1);
     try {
       await api.toggleLike(listing.id, wasLiked);
     } catch {
-      // Rollback
       setLiked(wasLiked);
       setLikesCount(n => wasLiked ? n + 1 : n - 1);
     }
@@ -252,28 +258,17 @@ export default function ListingDetailPage() {
     setTimeout(() => setShareToast(false), 2500);
   };
 
-  // ── idx for thumb color — FIXED: coerce id to string before .replace() ──
   const idx = listing ? (parseInt(String(listing.id ?? '').replace(/\D/g,'') || '0') % 12) : 0;
 
-  // ── Safe seller fallback — guards against undefined listing.seller ──
   const seller = listing?.seller ?? {
     id: '', name: '', shopName: '', verified: false,
     rating: 0, totalSales: 0, avatar: '',
   };
   const sellerDisplay = seller.shopName || seller.name || 'Unknown seller';
 
-  const pageTheme = isDark ? 'bg-black text-white' : 'bg-[#f7f9fc] text-black';
-  const mutedText = isDark ? 'text-white/40' : 'text-black/60';
-  const borderTone = isDark ? 'border-white/[0.07]' : 'border-black/10';
-  const tabIdle = isDark ? 'text-white/30 hover:text-white/60' : 'text-black/55 hover:text-black/80';
-  const cardTone = isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-black/[0.02] border-black/10';
-  const softButton = isDark
-    ? 'border-white/[0.1] bg-white/[0.04] text-white/50 hover:bg-white/[0.07] hover:text-white'
-    : 'border-black/10 bg-black/[0.03] text-black/70 hover:bg-black/[0.06] hover:text-black';
-
   return (
     <AppLayout>
-      <div className={`min-h-screen overflow-x-hidden ${pageTheme}`} style={{ fontFamily: "'Outfit',sans-serif" }}>
+      <div style={{ minHeight: '100vh', overflow: 'hidden', fontFamily: "'Outfit',sans-serif", background: 'var(--bg)', color: 'var(--text1)' }}>
 
         {/* ── Share toast ── */}
         {shareToast && (
@@ -286,10 +281,12 @@ export default function ListingDetailPage() {
         {/* ── Error state ── */}
         {error && (
           <div className={`flex flex-col items-center justify-center py-24 gap-4 ${mutedText}`}>
-            <AlertCircle size={40} className="text-red-400/60" />
-            <p className="text-[14px]">{error}</p>
-            <button onClick={() => fetchListing(id!)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full border ${borderTone} text-[13px] font-semibold transition-all ${isDark ? 'hover:border-white/25' : 'hover:border-black/30'}`}>
+            <AlertCircle size={40} className="text-red-400 opacity-60" />
+            <p className="text-sm">{error}</p>
+            <button
+              onClick={() => fetchListing(id!)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-[13px] font-semibold transition-all ${softButton}`}
+            >
               <RefreshCw size={13} /> Try again
             </button>
           </div>
@@ -307,7 +304,6 @@ export default function ListingDetailPage() {
                 {/* 16:9 product visual */}
                 <div className={`relative w-full rounded-2xl overflow-hidden border ${isDark ? 'bg-[#0f0f0f] border-white/[0.07]' : 'bg-white border-black/10'}`}
                   style={{ paddingTop:'56.25%' }}>
-                  {/* TODO: swap <Thumb> for <img src={listing.images[0]} className="absolute inset-0 w-full h-full object-cover" /> when images exist */}
                   <Thumb index={idx} />
 
                   {listing.badge && (
@@ -349,41 +345,59 @@ export default function ListingDetailPage() {
 
                     {/* Like / Dislike */}
                     <div className={`flex items-center rounded-full border overflow-hidden ${softButton}`}>
-                      <button onClick={handleLike}
+                      <button
+                        onClick={handleLike}
                         className={`flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold transition-all
-                          ${liked ? 'bg-green-500/15 text-green-500' : ''}`}>
+                          ${liked ? 'bg-green-500/15 text-green-500' : ''}`}
+                      >
                         <ThumbsUp size={14} fill={liked ? 'currentColor' : 'none'} />
                         <span>{likesCount.toLocaleString()}</span>
                       </button>
-                      <div className={`w-px h-5 ${isDark ? 'bg-white/[0.1]' : 'bg-black/10'}`}/>
+                      <div className={`w-px h-5 ${divider}`} />
                       <button
-                        onClick={() => { setDisliked(d => !d); if (liked) { setLiked(false); setLikesCount(n => n - 1); }}}
-                        className={`px-3 py-2 transition-all ${disliked ? 'bg-red-500/10 text-red-400' : isDark ? 'text-white/50 hover:bg-white/[0.06] hover:text-white' : 'text-black/70 hover:bg-black/[0.06] hover:text-black'}`}>
+                        onClick={() => {
+                          setDisliked(d => !d);
+                          if (liked) { setLiked(false); setLikesCount(n => n - 1); }
+                        }}
+                        className={`px-3 py-2 transition-all ${disliked
+                          ? 'bg-red-500/10 text-red-400'
+                          : isDark
+                            ? 'text-white/50 hover:bg-white/[0.06] hover:text-white'
+                            : 'text-black/70 hover:bg-black/[0.06] hover:text-black'}`}
+                      >
                         <ThumbsDown size={14} fill={disliked ? 'currentColor' : 'none'} />
                       </button>
                     </div>
 
-                    <button onClick={handleShare}
-                      className={`flex items-center gap-1.5 px-4 py-2 rounded-full border text-[13px] font-semibold transition-all ${softButton}`}>
+                    <button
+                      onClick={handleShare}
+                      className={`flex items-center gap-1.5 px-4 py-2 rounded-full border text-[13px] font-semibold transition-all ${softButton}`}
+                    >
                       <Share2 size={13}/> Share
                     </button>
 
-                    <button onClick={handleSave}
+                    <button
+                      onClick={handleSave}
                       className={`flex items-center gap-1.5 px-4 py-2 rounded-full border text-[13px] font-semibold transition-all
-                        ${saved ? 'border-green-500/40 bg-green-500/10 text-green-500' : softButton}`}>
+                        ${saved
+                          ? 'border-green-500/40 bg-green-500/10 text-green-500'
+                          : softButton}`}
+                    >
                       <Bookmark size={13} fill={saved ? 'currentColor' : 'none'} />
                       {saved ? 'Saved' : 'Save'}
                     </button>
 
-                    {/* Chat seller — primary CTA */}
                     <Link
                       to={`/chat?seller=${encodeURIComponent(sellerDisplay)}&item=${encodeURIComponent(listing.title)}&price=${listing.price}`}
-                      className="flex items-center gap-1.5 px-5 py-2 rounded-full bg-green-500 hover:bg-green-600 active:scale-95 text-black font-bold text-[13px] transition-all no-underline shadow-lg shadow-green-500/20">
+                      className="flex items-center gap-1.5 px-5 py-2 rounded-full bg-green-500 hover:bg-green-600 active:scale-95 text-black font-bold text-[13px] transition-all no-underline shadow-lg shadow-green-500/20"
+                    >
                       <MessageCircle size={13}/> Chat seller
                     </Link>
                   </div>
 
-                  <button className={`p-2 rounded-full transition-all ${isDark ? 'text-white/25 hover:text-white/60 hover:bg-white/[0.06]' : 'text-black/40 hover:text-black/75 hover:bg-black/[0.06]'}`}>
+                  <button className={`p-2 rounded-full transition-all ${isDark
+                    ? 'text-white/25 hover:text-white/60 hover:bg-white/[0.06]'
+                    : 'text-black/40 hover:text-black/75 hover:bg-black/[0.06]'}`}>
                     <Flag size={14}/>
                   </button>
                 </div>
@@ -391,7 +405,6 @@ export default function ListingDetailPage() {
                 {/* ── Seller card ── */}
                 <div className={`flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-2xl border mb-6 ${cardTone}`}>
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    {/* Avatar — TODO: swap for <img src={seller.avatar} /> */}
                     <div className="w-12 h-12 rounded-full flex items-center justify-center text-base font-black text-black flex-shrink-0"
                       style={{ background:'linear-gradient(135deg,#22c55e,#16a34a)' }}>
                       {String(seller.name ?? '').charAt(0)}
@@ -405,11 +418,13 @@ export default function ListingDetailPage() {
                           </svg>
                         )}
                       </div>
-                      <div className={`flex items-center gap-2 text-[11px] ${isDark ? 'text-white/35' : 'text-black/60'}`}>
+                      <div className={`flex items-center gap-2 text-[11px] ${mutedText}`}>
                         <span className="flex items-center gap-0.5">
                           {[...Array(5)].map((_,i) => (
-                            <Star key={i} size={9} fill={i < Math.floor(seller.rating) ? '#22c55e' : 'none'}
-                              className={i < Math.floor(seller.rating) ? 'text-green-500' : isDark ? 'text-white/15' : 'text-black/20'}/>
+                            <Star key={i} size={9}
+                              fill={i < Math.floor(seller.rating) ? '#22c55e' : 'none'}
+                              className={i < Math.floor(seller.rating) ? 'text-green-500' : isDark ? 'text-white/15' : 'text-black/20'}
+                            />
                           ))}
                           <span className="ml-1">{seller.rating}</span>
                         </span>
@@ -422,18 +437,21 @@ export default function ListingDetailPage() {
                   <div className="flex gap-2 flex-shrink-0">
                     <Link
                       to={`/chat?seller=${encodeURIComponent(sellerDisplay)}&item=${encodeURIComponent(listing.title)}&price=${listing.price}`}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-green-500 hover:bg-green-600 text-black font-bold text-[12px] transition-all no-underline">
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-green-500 hover:bg-green-600 text-black font-bold text-[12px] transition-all no-underline"
+                    >
                       <MessageCircle size={12}/> Chat
                     </Link>
-                    <button onClick={() => setShowPhone(s => !s)}
-                      className={`flex items-center gap-1.5 px-4 py-2 rounded-full border text-[12px] font-semibold transition-all ${softButton}`}>
+                    <button
+                      onClick={() => setShowPhone(s => !s)}
+                      className={`flex items-center gap-1.5 px-4 py-2 rounded-full border text-[12px] font-semibold transition-all ${softButton}`}
+                    >
                       <Phone size={12}/>
                       {showPhone ? listing.location : 'Call'}
                     </button>
                   </div>
                 </div>
 
-                {/* ── Buyer confidence strip (enhanced) ── */}
+                {/* ── Buyer confidence strip ── */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-7">
                   <div className={`rounded-xl border p-3.5 flex items-start gap-2.5 ${cardTone}`}>
                     <ShieldCheck size={16} className="text-green-500 mt-0.5" />
@@ -463,7 +481,8 @@ export default function ListingDetailPage() {
                   {(['description','details','seller'] as const).map(tab => (
                     <button key={tab} onClick={() => setActiveTab(tab)}
                       className={`px-5 py-2.5 text-[13px] font-semibold capitalize transition-all border-b-2 -mb-px
-                        ${activeTab === tab ? 'border-green-500 text-green-400' : `border-transparent ${tabIdle}`}`}>
+                        ${activeTab === tab ? 'border-green-500 text-green-400' : `border-transparent ${tabIdle}`}`}
+                    >
                       {tab}
                     </button>
                   ))}
@@ -471,7 +490,9 @@ export default function ListingDetailPage() {
 
                 <div className="mb-10" style={{ animation:'fadeUp .3s ease both' }} key={activeTab}>
                   {activeTab === 'description' && (
-                    <p className={`text-[14px] leading-relaxed ${isDark ? 'text-white/55' : 'text-black/75'}`}>{listing.description || 'No description provided.'}</p>
+                    <p className={`text-[14px] leading-relaxed ${isDark ? 'text-white/55' : 'text-black/75'}`}>
+                      {listing.description || 'No description provided.'}
+                    </p>
                   )}
                   {activeTab === 'details' && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -499,9 +520,12 @@ export default function ListingDetailPage() {
                         ['Verified',    seller.verified ? '✓ Verified' : 'Not verified'],
                         ['Seller ID',   seller.id],
                       ].map(([k,v], i, arr) => (
-                        <div key={k} className={`flex justify-between items-center px-4 py-3.5 ${i < arr.length-1 ? `border-b ${isDark ? 'border-white/[0.05]' : 'border-black/10'}` : ''}`}>
-                          <span className={`text-[13px] ${isDark ? 'text-white/35' : 'text-black/60'}`}>{k}</span>
-                          <span className={`text-[13px] font-semibold ${k==='Verified'&&seller.verified ? 'text-green-500' : ''}`}>{v}</span>
+                        <div
+                          key={k}
+                          className={`flex justify-between items-center px-4 py-3.5 ${i < arr.length - 1 ? `border-b ${isDark ? 'border-white/[0.05]' : 'border-black/10'}` : ''}`}
+                        >
+                          <span className={`text-[13px] ${mutedText}`}>{k}</span>
+                          <span className={`text-[13px] font-semibold ${k === 'Verified' && seller.verified ? 'text-green-500' : ''}`}>{v}</span>
                         </div>
                       ))}
                     </div>
@@ -511,16 +535,14 @@ export default function ListingDetailPage() {
               </>)}
             </div>
 
-            {/* ════ RIGHT — suggested sidebar (wider, separated) ════ */}
+            {/* ════ RIGHT — suggested sidebar ════ */}
             <div className={`w-full xl:w-[460px] 2xl:w-[500px] flex-shrink-0 xl:border-l border-t xl:border-t-0 ${borderTone}`}>
-              {/* Sticky inner wrapper */}
               <div className="xl:sticky xl:top-[72px] xl:max-h-[calc(100vh-72px)] xl:overflow-y-auto scrollbar-none px-5 py-6">
-                <h3 className={`text-[11px] font-bold uppercase tracking-[2px] mb-4 ${isDark ? 'text-white/30' : 'text-black/55'}`}>Related Listings</h3>
+                <h3 className={`text-[11px] font-bold uppercase tracking-[2px] mb-4 ${mutedText}`}>Related Listings</h3>
 
                 {loadingSide ? <SkeletonSidebar /> : (
                   <div className="flex flex-col gap-1">
                     {related.map((l) => {
-                      // FIXED: coerce id to string before .replace()
                       const relIdx = parseInt(String(l.id ?? '').replace(/\D/g,'') || '0') % 12;
                       return <SuggestedCard key={l.id} listing={l} index={relIdx} isDark={isDark} />;
                     })}
@@ -536,9 +558,10 @@ export default function ListingDetailPage() {
 
           </div>
         )}
-      <style>{`
-        @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
-      `}</style>
+
+        <style>{`
+          @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+        `}</style>
       </div>
     </AppLayout>
   );
