@@ -8,7 +8,7 @@ import ForgotPasswordPage from '../features/auth/pages/ForgotPasswordPage';
 import NotFoundPage       from '../features/auth/pages/NotFoundPage';
 import LandingPage        from '../features/auth/pages/LandingPage';
 import VerifyEmail        from '../features/auth/components/verifyEmail';
-
+const SellerAnalyticsPage = lazy(() => import('../features/dashboard/components/sellerAnalytics'));
 const HomePage            = lazy(() => import('../features/home/pages/HomePage'));
 const TrendingPage        = lazy(() => import('../features/home/pages/TrendingPage'));
 const NearMePage          = lazy(() => import('../features/home/pages/NearMePage'));
@@ -64,6 +64,7 @@ export default function Router() {
           <Route path="/buyer/dashboard"       element={<BuyerDashboard />} />
           <Route path="/seller/dashboard"      element={<SellerDashboard />} />
           <Route path="/wholesaler/dashboard"  element={<WholesalerDashboard />} />
+          <Route path="/analytics"      element={<SellerAnalyticsPage />} />
 
           {/* 404 */}
           <Route path="*"                      element={<NotFoundPage />} />
