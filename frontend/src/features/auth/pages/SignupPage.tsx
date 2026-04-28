@@ -5,6 +5,7 @@ import SignupWizard from '../components/SignupWizard';
 
 export default function SignupPage() {
   const { theme, toggle } = useTheme();
+<<<<<<< HEAD
   const isDark = theme === 'dark';
 
   /* ── colour tokens that flip with theme ── */
@@ -27,6 +28,26 @@ export default function SignupPage() {
     toggleBg:     isDark ? 'rgba(34,197,94,0.08)'   : 'rgba(34,197,94,0.12)',
     toggleBorder: isDark ? 'rgba(34,197,94,0.2)'    : 'rgba(34,197,94,0.35)',
     toggleColor:  isDark ? '#86efac'   : '#16a34a',
+=======
+
+  const t = {
+    pageBg:       'linear-gradient(130deg, var(--bg), var(--bg2))',
+    leftBg:       'linear-gradient(160deg, var(--bg2), var(--bg), var(--bg2))',
+    gridLine:     'rgba(34,197,94,0.08)',
+    orb1:         'rgba(34,197,94,0.1)',
+    orb2:         'rgba(34,197,94,0.08)',
+    headline:     'var(--text1)',
+    subtext:      'var(--text2)',
+    badgeBorder:  'var(--border2)',
+    badgeBg:      'var(--bg2)',
+    rightBg:      'var(--bg)',
+    rightBorder:  'var(--border-custom)',
+    accentLine:   'var(--link)',
+    logoText:     'var(--text1)',
+    toggleBg:     'var(--bg2)',
+    toggleBorder: 'var(--border-custom)',
+    toggleColor:  'var(--link)',
+>>>>>>> main
   };
 
   return (
@@ -68,7 +89,11 @@ export default function SignupPage() {
             </p>
           </div>
 
+<<<<<<< HEAD
           <SignupScene isDark={isDark} />
+=======
+          <SignupScene isDark={theme === 'dark'} />
+>>>>>>> main
 
           <div className="flex flex-wrap justify-center gap-3 mt-4">
             {['3.4K Active Sellers', '12K+ Buyers', '50+ Countries'].map((label, i) => (
@@ -91,7 +116,11 @@ export default function SignupPage() {
       >
         {/* Top accent line */}
         <div className="absolute top-0 left-0 right-0 h-0.75 pointer-events-none"
+<<<<<<< HEAD
           style={{ background: `linear-gradient(90deg,transparent,#22c55e,transparent)`, opacity: isDark ? 0.4 : 0.7 }} />
+=======
+          style={{ background: `linear-gradient(90deg,transparent,#22c55e,transparent)`, opacity: theme === 'dark' ? 0.4 : 0.7 }} />
+>>>>>>> main
 
         {/* ── Top bar: logo + theme toggle ── */}
         <div className="flex items-center justify-between w-full max-w-100 mb-6"
@@ -115,18 +144,30 @@ export default function SignupPage() {
           {/* Theme toggle */}
           <button
             onClick={toggle}
+<<<<<<< HEAD
             title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             className="flex items-center gap-2 px-3 py-2 rounded-xl border transition-all duration-300 hover:scale-105 active:scale-95"
             style={{ background: t.toggleBg, borderColor: t.toggleBorder, color: t.toggleColor }}
           >
             {isDark
+=======
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border transition-all duration-300 hover:scale-105 active:scale-95"
+            style={{ background: t.toggleBg, borderColor: t.toggleBorder, color: t.toggleColor }}
+          >
+            {theme === 'dark'
+>>>>>>> main
               ? <><Sun  size={14} /><span className="text-[11px] font-semibold hidden sm:inline">Light</span></>
               : <><Moon size={14} /><span className="text-[11px] font-semibold hidden sm:inline">Dark</span></>
             }
           </button>
         </div>
 
+<<<<<<< HEAD
         <SignupWizard isDark={isDark} />
+=======
+        <SignupWizard isDark={theme === 'dark'} />
+>>>>>>> main
       </div>
 
     </div>

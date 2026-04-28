@@ -17,12 +17,17 @@ export default function CreateListingPage() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<ListingFormData>(INITIAL_LISTING_FORM);
 
-  const surface = isDark ? 'bg-neutral-950 border border-white/10 text-white' : 'bg-white border border-black/10 text-black';
-  const soft = isDark ? 'bg-white/5 border-white/10' : 'bg-black/[0.03] border-black/10';
-  const muted = isDark ? 'text-white/60' : 'text-black/60';
-  const input = isDark
-    ? 'bg-black/40 border-white/15 text-white placeholder:text-white/35'
-    : 'bg-white border-black/15 text-black placeholder:text-black/40';
+  const surface = 'rounded-2xl border p-5 md:p-7';
+  const soft = 'rounded-lg border px-3 py-2';
+  const muted = 'text-sm';
+  const input = 'h-11 rounded-lg border px-3 text-sm outline-none focus:border-green-500';
+
+  const styles = {
+    surface: { background: 'var(--bg2)', borderColor: 'var(--border-custom)', color: 'var(--text1)' },
+    soft: { background: theme === 'dark' ? 'rgba(34,197,94,0.05)' : 'rgba(34,197,94,0.03)', borderColor: 'var(--border-custom)' },
+    muted: { color: 'var(--text2)' },
+    input: { background: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--text1)' }
+  };
 
   const steps = ['Details', 'Media', 'Pricing', 'Publish'];
 
@@ -55,9 +60,9 @@ export default function CreateListingPage() {
 
   return (
     <AppLayout>
-      <div className={`min-h-screen p-4 md:p-6 lg:p-8 ${isDark ? 'bg-black text-white' : 'bg-[#f7f9fc] text-black'}`}>
-        <section className={`rounded-2xl p-5 md:p-7 ${surface}`}>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div style={{ minHeight: '100vh', padding: '16px', background: 'var(--bg)', color: 'var(--text1)' }}>
+        <section style={{ borderRadius: '16px', padding: '20px', ...styles.surface }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
               <h1 className="font-['Playfair_Display'] text-2xl md:text-3xl font-bold">Create listing</h1>
               <p className={`mt-1 text-sm md:text-base ${muted}`}>

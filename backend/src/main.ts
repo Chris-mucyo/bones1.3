@@ -21,7 +21,7 @@ async function bootstrap() {
 
   // CORS — tighten origins in production
   app.enableCors({
-    origin: process.env.FRONTEND_URL ?? 'http://localhost:5173',
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   });
 

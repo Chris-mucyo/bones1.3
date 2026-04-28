@@ -20,6 +20,7 @@ function saveRecent(term: string) {
   localStorage.setItem(RECENT_KEY, JSON.stringify([term, ...prev].slice(0, MAX_RECENT)));
 }
 
+<<<<<<< HEAD
 interface CatResponse  { categories: Category[]; }
 interface ListResponse { listings:   Listing[];  }
 
@@ -39,6 +40,26 @@ export default function SearchPage() {
   const [recentSearches, setRecentSearches] = useState<string[]>(loadRecent);
 
   const inputRef   = useRef<HTMLInputElement>(null);
+=======
+interface CatResponse { categories: Category[]; }
+interface ListResponse { listings: Listing[]; }
+
+export default function SearchPage() {
+  const { theme } = useTheme();
+  const navigate = useNavigate();
+
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [search, setSearch] = useState('');
+  const [inputValue, setInputValue] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+
+  const [categories, setCategories] = useState<string[]>(['All']);
+  const [suggestions, setSuggestions] = useState<Listing[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>(loadRecent);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+>>>>>>> main
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -71,7 +92,11 @@ export default function SearchPage() {
     const handleClickOutside = (e: MouseEvent) => {
       if (
         dropdownRef.current && !dropdownRef.current.contains(e.target as Node) &&
+<<<<<<< HEAD
         inputRef.current   && !inputRef.current.contains(e.target as Node)
+=======
+        inputRef.current && !inputRef.current.contains(e.target as Node)
+>>>>>>> main
       ) setIsFocused(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -108,6 +133,7 @@ export default function SearchPage() {
     inputValue.length > 0 ? p.title.toLowerCase().includes(inputValue.toLowerCase()) : true
   );
 
+<<<<<<< HEAD
   const text1   = isDark ? '#fff' : '#0f0f0f';
   const text2   = isDark ? 'rgba(255,255,255,0.4)'  : 'rgba(0,0,0,0.4)';
   const text3   = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)';
@@ -119,11 +145,22 @@ export default function SearchPage() {
     border: `1px solid ${isDark ? 'rgba(255,255,255,0.13)' : 'rgba(0,0,0,0.13)'}`,
     padding: '6px 12px', borderRadius: 20, textDecoration: 'none',
     background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+=======
+  const seeAllStyle: React.CSSProperties = {
+    fontSize: 12, fontWeight: 600, color: 'var(--link)',
+    border: '1px solid var(--border2)',
+    padding: '6px 12px', borderRadius: 20, textDecoration: 'none',
+    background: 'var(--bg2)',
+>>>>>>> main
     cursor: 'pointer',
   };
 
   const headingStyle: React.CSSProperties = {
+<<<<<<< HEAD
     fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 700, color: text1,
+=======
+    fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 700, color: 'var(--text1)',
+>>>>>>> main
   };
 
   return (
@@ -134,12 +171,21 @@ export default function SearchPage() {
         <div style={{ position: 'relative', marginBottom: 20 }}>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 10,
+<<<<<<< HEAD
             background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
             border: `1.5px solid ${isFocused ? '#22c55e' : isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
             borderRadius: 14, padding: '0 14px', transition: 'border-color 0.2s',
           }}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
               stroke={isFocused ? '#22c55e' : isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)'}
+=======
+            background: 'var(--bg2)',
+            border: `1.5px solid ${isFocused ? 'var(--link)' : 'var(--border-custom)'}`,
+            borderRadius: 14, padding: '0 14px', transition: 'border-color 0.2s',
+          }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+              stroke={isFocused ? 'var(--link)' : 'var(--text3)'}
+>>>>>>> main
               strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transition: 'stroke 0.2s' }}>
               <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
@@ -149,16 +195,28 @@ export default function SearchPage() {
               onFocus={() => setIsFocused(true)} onKeyDown={handleKeyDown}
               style={{
                 flex: 1, height: 48, background: 'transparent', border: 'none', outline: 'none',
+<<<<<<< HEAD
                 fontSize: 15, fontFamily: "'DM Sans', sans-serif", color: text1, caretColor: '#22c55e',
+=======
+                fontSize: 15, fontFamily: "'DM Sans', sans-serif", color: 'var(--text1)', caretColor: 'var(--link)',
+>>>>>>> main
               }}
             />
             {inputValue.length > 0 && (
               <button onClick={handleClear} style={{
+<<<<<<< HEAD
                 background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
                 border: 'none', borderRadius: '50%', width: 22, height: 22,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', flexShrink: 0,
                 color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.45)',
+=======
+                background: 'var(--bg)',
+                border: '1px solid var(--border-custom)', borderRadius: '50%', width: 22, height: 22,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', flexShrink: 0,
+                color: 'var(--text2)',
+>>>>>>> main
                 fontSize: 13, fontWeight: 700,
               }}>✕</button>
             )}
@@ -168,13 +226,20 @@ export default function SearchPage() {
           {isFocused && (
             <div ref={dropdownRef} style={{
               position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0,
+<<<<<<< HEAD
               background: isDark ? '#1a1a1a' : '#fff',
               border: `1px solid ${border}`, borderRadius: 14,
               boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.5)' : '0 8px 32px rgba(0,0,0,0.1)',
+=======
+              background: 'var(--bg)',
+              border: '1px solid var(--border-custom)', borderRadius: 14,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+>>>>>>> main
               zIndex: 100, overflow: 'hidden',
             }}>
               {inputValue.length === 0 && recentSearches.length > 0 && (
                 <div style={{ padding: '14px 16px 6px' }}>
+<<<<<<< HEAD
                   <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: text3, marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}>Recent</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
                     {recentSearches.map(r => (
@@ -183,6 +248,16 @@ export default function SearchPage() {
                         borderRadius: 20, padding: '5px 12px', fontSize: 13,
                         fontFamily: "'DM Sans', sans-serif",
                         color: isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.65)',
+=======
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}>Recent</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                    {recentSearches.map(r => (
+                      <button key={r} onClick={() => handleSearch(r)} style={{
+                        background: 'var(--bg2)', border: '1px solid var(--border-custom)',
+                        borderRadius: 20, padding: '5px 12px', fontSize: 13,
+                        fontFamily: "'DM Sans', sans-serif",
+                        color: 'var(--text2)',
+>>>>>>> main
                         cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5,
                       }}>
                         <span style={{ fontSize: 11, opacity: 0.5 }}>🕐</span> {r}
@@ -194,20 +269,36 @@ export default function SearchPage() {
 
               <div style={{ padding: inputValue.length === 0 ? '6px 0 8px' : '10px 0 8px' }}>
                 {inputValue.length === 0 && (
+<<<<<<< HEAD
                   <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: text3, padding: '0 16px', marginBottom: 6, fontFamily: "'DM Sans', sans-serif" }}>Suggested</p>
                 )}
                 {filteredSuggestions.slice(0, 6).map(item => (
                   <button key={item.id} onClick={() => handleSearch(item.title)} style={{
+=======
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text3)', padding: '0 16px', marginBottom: 6, fontFamily: "'DM Sans', sans-serif" }}>Suggested</p>
+                )}
+                {filteredSuggestions.slice(0, 6).map(item => {
+                  const sellerDisplay = item.seller?.shopName ?? item.seller?.name;
+                  return <button key={item.id} onClick={() => handleSearch(item.title)} style={{
+>>>>>>> main
                     width: '100%', background: 'transparent', border: 'none',
                     padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 12,
                     cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s',
                   }}
+<<<<<<< HEAD
                     onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'; }}
+=======
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg2)'; }}
+>>>>>>> main
                     onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
                   >
                     <span style={{
                       width: 34, height: 34, borderRadius: 10,
+<<<<<<< HEAD
                       background: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)',
+=======
+                      background: 'var(--bg2)',
+>>>>>>> main
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, flexShrink: 0,
                     }}>
                       {item.images?.[0]
@@ -215,16 +306,27 @@ export default function SearchPage() {
                         : '📦'}
                     </span>
                     <div>
+<<<<<<< HEAD
                       <p style={{ fontSize: 14, fontWeight: 500, color: text1, fontFamily: "'DM Sans', sans-serif", margin: 0 }}>{item.title}</p>
                       <p style={{ fontSize: 12, color: text2, fontFamily: "'DM Sans', sans-serif", margin: 0 }}>{item.category}</p>
+=======
+                      <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text1)', fontFamily: "'DM Sans', sans-serif", margin: 0 }}>{item.title}</p>
+                      <p style={{ fontSize: 12, color: 'var(--text2)', fontFamily: "'DM Sans', sans-serif", margin: 0 }}>{item.category}</p>
+>>>>>>> main
                     </div>
                     <svg style={{ marginLeft: 'auto', opacity: 0.3, flexShrink: 0 }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="7" y1="17" x2="17" y2="7" /><polyline points="7 7 17 7 17 17" />
                     </svg>
                   </button>
+<<<<<<< HEAD
                 ))}
                 {inputValue.length > 0 && filteredSuggestions.length === 0 && (
                   <p style={{ padding: '12px 16px', fontSize: 14, color: text2, fontFamily: "'DM Sans', sans-serif" }}>
+=======
+                })}
+                {inputValue.length > 0 && filteredSuggestions.length === 0 && (
+                  <p style={{ padding: '12px 16px', fontSize: 14, color: 'var(--text2)', fontFamily: "'DM Sans', sans-serif" }}>
+>>>>>>> main
                     No suggestions for "{inputValue}"
                   </p>
                 )}
@@ -233,7 +335,11 @@ export default function SearchPage() {
           )}
         </div>
 
+<<<<<<< HEAD
         <FilterChips categories={categories} active={activeCategory} onChange={handleCategoryChange} isDark={isDark} />
+=======
+        <FilterChips categories={categories} active={activeCategory} onChange={handleCategoryChange} isDark={theme === 'dark'} />
+>>>>>>> main
       </div>
 
       <div style={{ padding: '24px 20px 40px' }}>
@@ -247,19 +353,33 @@ export default function SearchPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 32 }}>
               {suggestions.map(item => (
                 <button key={item.id} onClick={() => handleSearch(item.title)} style={{
+<<<<<<< HEAD
                   background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
                   border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+=======
+                  background: 'var(--bg2)',
+                  border: '1px solid var(--border-custom)',
+>>>>>>> main
                   borderRadius: 14, padding: '14px 10px',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
                   cursor: 'pointer', transition: 'border-color 0.2s, background 0.2s',
                 }}
                   onMouseEnter={e => {
+<<<<<<< HEAD
                     (e.currentTarget as HTMLButtonElement).style.borderColor = '#22c55e';
                     (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(34,197,94,0.07)' : 'rgba(34,197,94,0.05)';
                   }}
                   onMouseLeave={e => {
                     (e.currentTarget as HTMLButtonElement).style.borderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
                     (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)';
+=======
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--link)';
+                    (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg2)';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-custom)';
+                    (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg2)';
+>>>>>>> main
                   }}
                 >
                   <span style={{ fontSize: 24 }}>
@@ -267,7 +387,11 @@ export default function SearchPage() {
                       ? <img src={item.images[0]} alt="" style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: 8 }} />
                       : '📦'}
                   </span>
+<<<<<<< HEAD
                   <p style={{ fontSize: 11, fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.65)', fontFamily: "'DM Sans', sans-serif", textAlign: 'center', margin: 0, lineHeight: 1.3 }}>
+=======
+                  <p style={{ fontSize: 11, fontWeight: 600, color: theme === 'dark' ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.65)', fontFamily: "'DM Sans', sans-serif", textAlign: 'center', margin: 0, lineHeight: 1.3 }}>
+>>>>>>> main
                     {item.title}
                   </p>
                 </button>
@@ -277,11 +401,16 @@ export default function SearchPage() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
               <h2 style={headingStyle}>Browse All</h2>
             </div>
+<<<<<<< HEAD
             <ListingGrid category={activeCategory} search="" isDark={isDark} />
+=======
+            <ListingGrid category={activeCategory} search="" isDark={theme === 'dark'} />
+>>>>>>> main
           </>
         ) : (
           <>
             <div style={{ marginBottom: 16 }}>
+<<<<<<< HEAD
               <p style={{ fontSize: 13, color: text2, fontFamily: "'DM Sans', sans-serif" }}>
                 Showing results for{' '}
                 <span style={{ color: '#22c55e', fontWeight: 600 }}>"{search}"</span>
@@ -291,6 +420,17 @@ export default function SearchPage() {
               </p>
             </div>
             <ListingGrid category={activeCategory} search={search} isDark={isDark} />
+=======
+              <p style={{ fontSize: 13, color: theme === 'dark' ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.65)', fontFamily: "'DM Sans', sans-serif" }}>
+                Showing results for{' '}
+                <span style={{ color: '#22c55e', fontWeight: 600 }}>"{search}"</span>
+                {activeCategory !== 'All' && (
+                  <> in <span style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.65)', fontWeight: 600 }}>{activeCategory}</span></>
+                )}
+              </p>
+            </div>
+            <ListingGrid category={activeCategory} search={search} isDark={theme === 'dark' } />
+>>>>>>> main
           </>
         )}
       </div>

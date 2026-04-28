@@ -17,12 +17,23 @@ export default function LoginForm({ onSubmit, loading, error }: Props) {
   const [errors, setErrors] = useState<{ email?: string | null; password?: string | null }>({});
   const [showPassword, setShowPassword] = useState(false);
 
+<<<<<<< HEAD
   const t1 = theme === 'dark' ? '#f0faf2' : '#0c1f0e';
   const t2 = theme === 'dark' ? 'rgba(240,250,242,0.5)' : 'rgba(12,31,14,0.55)';
   const t3 = theme === 'dark' ? 'rgba(240,250,242,0.25)' : 'rgba(12,31,14,0.3)';
   const labelColor = theme === 'dark' ? 'rgba(34,197,94,0.45)' : 'rgba(22,163,74,0.6)';
   const divider = theme === 'dark' ? 'rgba(34,197,94,0.1)' : 'rgba(22,163,74,0.12)';
   const link = theme === 'dark' ? '#22c55e' : '#16a34a';
+=======
+  // Using CSS theme variables from globals.css
+  const cssVar = (name: string) => `var(--${name})`;
+  const t1 = cssVar('text1');
+  const t2 = cssVar('text2');
+  const t3 = cssVar('text3');
+  const labelColor = cssVar('label');
+  const divider = cssVar('divider');
+  const link = cssVar('link');
+>>>>>>> main
   
 
   function validate() {
@@ -65,6 +76,7 @@ export default function LoginForm({ onSubmit, loading, error }: Props) {
         <button
           type="button"
           onClick={() => authService.loginWithGoogle()}
+<<<<<<< HEAD
           className="w-full flex items-center justify-center gap-3 rounded-xl border py-3.5 font-semibold text-sm transition-all duration-200"
           style={{
             background: theme === 'dark' ? '#000000' : '#ffffff',
@@ -77,6 +89,14 @@ export default function LoginForm({ onSubmit, loading, error }: Props) {
           onMouseLeave={e => {
             (e.currentTarget as HTMLButtonElement).style.borderColor = theme === 'dark' ? 'rgba(34,197,94,0.2)' : 'rgba(0,0,0,0.12)';
           }}
+=======
+          className="w-full flex items-center justify-center gap-3 rounded-xl border py-3.5 font-semibold text-sm transition-all duration-200 hover:border-green-500"
+          style={{
+            background: 'var(--bg2)',
+            borderColor: 'var(--border-custom)',
+            color: t1,
+          }}
+>>>>>>> main
         >
           <svg width="20" height="20" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

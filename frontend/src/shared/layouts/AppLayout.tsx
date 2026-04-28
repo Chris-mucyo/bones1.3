@@ -51,6 +51,7 @@ export default function AppLayout({ children }: Props) {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+<<<<<<< HEAD
   // Softer palette for eye comfort in both themes.
   const navTheme = {
     topbarBg: isDark ? 'rgba(19,21,22,0.9)' : 'rgba(246,247,248,0.94)',
@@ -59,6 +60,16 @@ export default function AppLayout({ children }: Props) {
     bg: isDark ? '#111314' : '#f8f9fb',
     text1: isDark ? 'rgba(255,255,255,0.95)' : '#0f1720',
     text2: isDark ? 'rgba(255,255,255,0.58)' : '#000000',
+=======
+  // Using CSS theme variables from globals.css
+  const navTheme = {
+    topbarBg: 'var(--bg)',
+    border: 'var(--border-custom)',
+    sidebarBg: 'var(--bg2)',
+    bg: 'var(--bg)',
+    text1: 'var(--text1)',
+    text2: 'var(--text2)',
+>>>>>>> main
     hover: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.045)',
     green: '#22c55e',
     greenDim: isDark ? 'rgba(34,197,94,0.14)' : 'rgba(34,197,94,0.12)',

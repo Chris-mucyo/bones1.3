@@ -11,7 +11,6 @@ interface CurrentUser {
 
 export default function SettingsPage() {
   const { theme, toggle } = useTheme();
-  const isDark = theme === 'dark';
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -53,10 +52,10 @@ export default function SettingsPage() {
     return () => controller.abort();
   }, []);
 
-  const surface = isDark ? 'bg-neutral-950 border border-white/10 text-white' : 'bg-white border border-black/10 text-black';
-  const soft = isDark ? 'bg-white/5 border-white/10' : 'bg-black/[0.03] border-black/10';
-  const muted = isDark ? 'text-white/60' : 'text-black/60';
-  const input = isDark ? 'bg-black/40 border-white/15 text-white' : 'bg-white border-black/15 text-black';
+  const surface = '';
+  const soft = '';
+  const muted = '';
+  const input = '';
 
   const socialCommerceScore = useMemo(() => {
     let score = 50;
@@ -97,16 +96,16 @@ export default function SettingsPage() {
     value: boolean;
     onChange: (value: boolean) => void;
   }) => (
-    <div className={`rounded-xl border p-3 ${soft}`}>
+    <div className="rounded-xl border p-3" style={{ background: 'var(--bg2)', borderColor: 'var(--border-custom)' }}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold">{label}</p>
-          <p className={`text-xs mt-1 ${muted}`}>{description}</p>
+          <p className="text-xs mt-1" style={{ color: 'var(--text2)' }}>{description}</p>
         </div>
         <button
           type="button"
           onClick={() => onChange(!value)}
-          className={`relative h-6 w-11 rounded-full transition-colors ${value ? 'bg-green-500' : isDark ? 'bg-white/20' : 'bg-black/20'}`}
+          className="relative h-6 w-11 rounded-full transition-colors" style={{ background: value ? 'var(--link)' : 'var(--bg)' }}
         >
           <span
             className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all duration-300 ${
@@ -120,13 +119,13 @@ export default function SettingsPage() {
 
   return (
     <AppLayout>
-      <div className={`min-h-screen p-4 md:p-6 lg:p-8 ${isDark ? 'bg-black text-white' : 'bg-[#f7f9fc] text-black'}`}>
-        <section className={`rounded-2xl p-5 md:p-6 ${surface}`}>
+      <div className="min-h-screen p-4 md:p-6 lg:p-8" style={{ background: 'var(--bg)', color: 'var(--text1)' }}>
+        <section className="rounded-2xl p-5 md:p-6" style={{ background: 'var(--bg)', border: '1px solid var(--border-custom)' }}>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="font-['Playfair_Display'] text-2xl md:text-3xl font-bold">Settings</h1>
-              <p className={`mt-1 text-sm md:text-base ${muted}`}>{roleHint}</p>
-              <p className={`mt-2 text-xs ${muted}`}>
+              <p className="mt-1 text-sm md:text-base" style={{ color: 'var(--text2)' }}>{roleHint}</p>
+              <p className="mt-2 text-xs" style={{ color: 'var(--text2)' }}>
                 {loading ? 'Loading account...' : `${user?.name ?? 'Unknown'} • ${user?.role ?? 'guest'}`}
               </p>
             </div>
@@ -151,12 +150,12 @@ export default function SettingsPage() {
                     onClick={toggle}
                     aria-label="Toggle dark mode"
                     className={`relative h-8 w-16 rounded-full transition-colors duration-300 ${
-                      isDark ? 'bg-green-500' : 'bg-black/20'
+                      theme === 'dark' ? 'bg-green-500' : 'bg-black/20'
                     }`}
                   >
                     <span
                       className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow-sm transition-all duration-300 ${
-                        isDark ? 'left-8.5' : 'left-1'
+                        theme === 'dark' ? 'left-8.5' : 'left-1'
                       }`}
                     />
                    
