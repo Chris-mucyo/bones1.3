@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import AppLayout from '../../../shared/layouts/AppLayout';
 import { useTheme } from '../../../shared/components/ThemeProvider';
@@ -12,7 +12,6 @@ interface CurrentUser {
   unreadNotifications?: number;
 }
 
-
 export default function AccountPage() {
   const { theme } = useTheme();
 
@@ -23,6 +22,18 @@ export default function AccountPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [location, setLocation] = useState('');
+
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarHovered, setAvatarHovered] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setAvatarPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -35,15 +46,13 @@ export default function AccountPage() {
         },
       })
       .then(res => {
-        console.log("USER RESPONSE:", res.data);
-
         const apiUser = res.data;
 
         const mappedUser: CurrentUser = {
           id: String(apiUser.id),
-          fullName: apiUser.fullName, // ✅ FIX
-          avatarUrl: apiUser.avatarUrl ?? undefined, // ✅ FIX
-          role: apiUser.role, // ✅ FIX (BUYER → buyer)
+          fullName: apiUser.fullName,
+          avatarUrl: apiUser.avatarUrl ?? undefined,
+          role: apiUser.role,
         };
 
         setUser(mappedUser);
@@ -51,7 +60,7 @@ export default function AccountPage() {
       })
       .catch(err => {
         if (!axios.isCancel(err)) {
-          console.error("FETCH USER ERROR:", err);
+          console.error('FETCH USER ERROR:', err);
           setUser(null);
         }
       })
@@ -106,15 +115,55 @@ export default function AccountPage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen p-4 md:p-6 lg:p-8\" style={{ background: 'var(--bg)', color: 'var(--text1)' }}>
-        <section className="rounded-2xl overflow-hidden\" style={{ background: 'var(--bg)', border: '1px solid var(--border-custom)' }}>
-          <div className="h-32 md:h-40 w-full\" style={{ background: 'linear-gradient(to right, rgba(34,197,94,0.2), rgba(34,197,94,0.15), rgba(34,197,94,0.1))' }} />
+      <div className="min-h-screen p-4 md:p-6 lg:p-8" style={{ background: 'var(--bg)', color: 'var(--text1)' }}>
+        <section className="rounded-2xl overflow-hidden" style={{ background: 'var(--bg)', border: '1px solid var(--border-custom)' }}>
+          <div className="h-32 md:h-40 w-full" style={{ background: 'linear-gradient(to right, rgba(34,197,94,0.2), rgba(34,197,94,0.15), rgba(34,197,94,0.1))' }} />
           <div className="p-5 md:p-7">
             <div className="-mt-14 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
               <div className="flex items-end gap-4">
-                <div className="h-20 w-20 md:h-24 md:w-24 rounded-full border-4 border-black/80 bg-green-500 text-black text-2xl font-bold grid place-items-center">
-                  {(user?.fullName ?? 'A').charAt(0).toUpperCase()}
+
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarChange}
+                />
+
+                <div
+                  className="relative h-20 w-20 md:h-24 md:w-24 rounded-full border-4 cursor-pointer flex-shrink-0"
+                  style={{ borderColor: 'rgba(0,0,0,0.8)' }}
+                  onClick={() => avatarInputRef.current?.click()}
+                  onMouseEnter={() => setAvatarHovered(true)}
+                  onMouseLeave={() => setAvatarHovered(false)}
+                >
+                  {avatarPreview || user?.avatarUrl ? (
+                    <img
+                      src={avatarPreview ?? user?.avatarUrl}
+                      alt="Profile"
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full rounded-full bg-green-500 text-black text-2xl font-bold grid place-items-center">
+                      {(user?.fullName ?? 'A').charAt(0).toUpperCase()}
+                    </div>
+                  )}
+
+                  <div
+                    className="absolute inset-0 rounded-full flex flex-col items-center justify-center gap-0.5 transition-opacity duration-200"
+                    style={{
+                      background: 'rgba(0,0,0,0.55)',
+                      opacity: avatarHovered ? 1 : 0,
+                    }}
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    <span className="text-white font-semibold tracking-wide uppercase" style={{ fontSize: '9px' }}>Change</span>
+                  </div>
                 </div>
+
                 <div>
                   <h1 className="font-['Playfair_Display'] text-2xl md:text-3xl font-bold">Account Profile</h1>
                   <p className="text-sm md:text-base" style={{ color: 'var(--text2)' }}>
@@ -122,12 +171,11 @@ export default function AccountPage() {
                   </p>
                 </div>
               </div>
-              <span className="rounded-full px-3 py-1 text-xs font-medium\" style={{ background: 'var(--bg2)', border: '1px solid var(--border-custom)', color: 'var(--text3)' }}>
+              <span className="rounded-full px-3 py-1 text-xs font-medium" style={{ background: 'var(--bg2)', border: '1px solid var(--border-custom)', color: 'var(--text3)' }}>
                 {loading ? 'Loading profile...' : `Logged in as ${user?.fullName ?? 'Unknown user'}`}
               </span>
             </div>
           </div>
-          
         </section>
 
         <div className="mt-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
