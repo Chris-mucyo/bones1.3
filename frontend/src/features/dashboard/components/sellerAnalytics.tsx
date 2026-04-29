@@ -1,20 +1,18 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { format, subDays } from "date-fns";
+import { subDays } from "date-fns";
 import AppLayout from "../../../shared/layouts/AppLayout";
 import {
   ResponsiveContainer,
   AreaChart,
   Area,
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   CartesianGrid,
   XAxis,
   YAxis,
   Tooltip,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -24,10 +22,8 @@ import {
   ReferenceLine,
 } from "recharts";
 import {
-  ChevronLeft,
   ChevronRight,
   Download,
-  Filter,
   Calendar,
   TrendingUp,
   Users,
@@ -35,8 +31,18 @@ import {
   ShoppingCart,
   DollarSign,
   Zap,
+  Flame,
+  Share2,
+  Heart,
+  MessageCircle,
+  Star,
+  ArrowUpRight,
+  Play,
+  RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 
+/* ─────────────────── types ─────────────────── */
 interface CurrentUser {
   id: string;
   name: string;
@@ -75,519 +81,609 @@ interface OrderStatus {
   color: string;
 }
 
-// FALLBACK DATA for when API is not ready
-const FALLBACK_REVENUE_DATA: ChartDataPoint[] = [
-  { date: "2024-01-15", revenue: 220000, orders: 12, visitors: 450 },
-  { date: "2024-01-16", revenue: 310000, orders: 18, visitors: 520 },
-  { date: "2024-01-17", revenue: 280000, orders: 15, visitors: 480 },
-  { date: "2024-01-18", revenue: 420000, orders: 25, visitors: 650 },
-  { date: "2024-01-19", revenue: 510000, orders: 32, visitors: 780 },
-  { date: "2024-01-20", revenue: 640000, orders: 41, visitors: 920 },
-  { date: "2024-01-21", revenue: 720000, orders: 48, visitors: 1050 },
-];
+interface TopListing {
+  name: string;
+  views: string;
+  saves: string;
+  sales: string;
+  status: string;
+  engagement: string;
+}
 
-const FALLBACK_PRODUCT_DATA: ProductPerformance[] = [
-  { id: "1", name: "Wireless Earbuds", sales: 327, revenue: 2340000, views: 4500, conversionRate: 0.073 },
-  { id: "2", name: "Ring Light", sales: 221, revenue: 1650000, views: 3200, conversionRate: 0.069 },
-  { id: "3", name: "Desk Lamp", sales: 149, revenue: 1120000, views: 2100, conversionRate: 0.071 },
-  { id: "4", name: "Mouse Pad", sales: 102, revenue: 780000, views: 1450, conversionRate: 0.070 },
-];
+interface SocialSignal {
+  label: string;
+  value: string;
+  note: string;
+  icon: React.ElementType;
+}
 
-const FALLBACK_ORDER_PIPELINE: OrderStatus[] = [
-  { name: "New", value: 14, color: "#6366f1" },
-  { name: "Packed", value: 9, color: "#8b5cf6" },
-  { name: "Transit", value: 23, color: "#06b6d4" },
-  { name: "Delivered", value: 127, color: "#10b981" },
-];
+/* ─────────────────── icon map for social signals ─────────────────── */
+const SOCIAL_ICON_MAP: Record<string, React.ElementType> = {
+  followers: Users,
+  ctr: Play,
+  collabs: Share2,
+  wishlist: Heart,
+  review: Star,
+  live: Flame,
+};
 
-export default function SellerDashboard() {
+/* ─────────────────── base URL ─────────────────── */
+const API_BASE = "http://localhost:3000";
+
+/* ─────────────────── custom tooltip ─────────────────── */
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div style={{
+        background: "var(--card)",
+        border: "1px solid var(--border)",
+        borderRadius: "12px",
+        padding: "12px 16px",
+        boxShadow: "var(--shadow-lg)",
+        fontFamily: "Outfit, sans-serif",
+      }}>
+        <p style={{ color: "var(--muted-foreground)", fontSize: "12px", marginBottom: "6px" }}>{label}</p>
+        {payload.map((p: any, i: number) => (
+          <p key={i} style={{ color: p.color, fontSize: "13px", fontWeight: 600 }}>
+            {p.name}: {typeof p.value === "number" && p.name?.toLowerCase().includes("revenue")
+              ? `RWF ${p.value.toLocaleString()}`
+              : p.value}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+/* ─────────────────── status badge style ─────────────────── */
+const statusStyle = (status: string): React.CSSProperties => {
+  const map: Record<string, React.CSSProperties> = {
+    "Top performer": { background: "color-mix(in oklch, var(--primary) 25%, transparent)", color: "var(--link)", border: "1px solid color-mix(in oklch, var(--primary) 40%, transparent)" },
+    "Growing":       { background: "color-mix(in oklch, var(--chart-2) 20%, transparent)", color: "var(--chart-2)", border: "1px solid color-mix(in oklch, var(--chart-2) 40%, transparent)" },
+    "Needs promo":   { background: "color-mix(in oklch, var(--destructive) 15%, transparent)", color: "var(--destructive)", border: "1px solid color-mix(in oklch, var(--destructive) 30%, transparent)" },
+  };
+  return map[status] ?? { background: "var(--muted)", color: "var(--muted-foreground)" };
+};
+
+/* ═══════════════════════════════════════════════════════════
+   COMPONENT
+═══════════════════════════════════════════════════════════ */
+export default function SellerAnalyticsDashboard() {
   const navigate = useNavigate();
+
   const [user, setUser] = useState<CurrentUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [userLoading, setUserLoading] = useState(true);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
-  const [revenueData, setRevenueData] = useState<ChartDataPoint[]>(FALLBACK_REVENUE_DATA);
-  const [productData, setProductData] = useState<ProductPerformance[]>(FALLBACK_PRODUCT_DATA);
-  const [orderPipeline, setOrderPipeline] = useState<OrderStatus[]>(FALLBACK_ORDER_PIPELINE);
+  const [revenueData, setRevenueData] = useState<ChartDataPoint[]>([]);
+  const [productData, setProductData] = useState<ProductPerformance[]>([]);
+  const [orderPipeline, setOrderPipeline] = useState<OrderStatus[]>([]);
+  const [topListings, setTopListings] = useState<TopListing[]>([]);
+  const [socialSignals, setSocialSignals] = useState<SocialSignal[]>([]);
+
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d">("30d");
-  const [dateRange, setDateRange] = useState({
-    start: subDays(new Date(), 30),
-    end: new Date(),
-  });
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  // Fetch user data
+  /* ── fetch current user ── */
   useEffect(() => {
-    const controller = new AbortController();
-    axios
-      .get("/api/auth/me", { signal: controller.signal })
-      .then((res) => setUser(res.data))
+    const ctrl = new AbortController();
+    axios.get(`${API_BASE}/api/auth/me`, { signal: ctrl.signal })
+      .then((r) => setUser(r.data))
       .catch(() => setUser(null))
-      .finally(() => setLoading(false));
-
-    return () => controller.abort();
+      .finally(() => setUserLoading(false));
+    return () => ctrl.abort();
   }, []);
 
-  // Fetch analytics data
+  /* ── fetch analytics ── */
   const fetchAnalytics = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const response = await axios.get("/api/seller/analytics", {
-        params: { 
-          timeRange, 
-          startDate: dateRange.start.toISOString(), 
-          endDate: dateRange.end.toISOString() 
+      const end = new Date();
+      const start = subDays(end, timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 90);
+
+      const res = await axios.get(`${API_BASE}/api/seller/analytics`, {
+        params: {
+          timeRange,
+          startDate: start.toISOString(),
+          endDate: end.toISOString(),
         },
       });
-      
-      setAnalytics(response.data.summary);
-      setRevenueData(response.data.revenueTrend || FALLBACK_REVENUE_DATA);
-      setProductData(response.data.topProducts || FALLBACK_PRODUCT_DATA);
-      setOrderPipeline(response.data.orderPipeline || FALLBACK_ORDER_PIPELINE);
-      setIsDataLoaded(true);
-    } catch (error) {
-      console.error("Failed to fetch analytics:", error);
-      // Keep fallback data on error
+
+      const data = res.data;
+      if (data.summary)       setAnalytics(data.summary);
+      if (data.revenueTrend)  setRevenueData(data.revenueTrend);
+      if (data.topProducts)   setProductData(data.topProducts);
+      if (data.orderPipeline) setOrderPipeline(data.orderPipeline);
+      if (data.topListings)   setTopListings(data.topListings);
+      if (data.socialSignals) {
+        // Attach icon components based on a key provided by the API
+        setSocialSignals(
+          data.socialSignals.map((s: any) => ({
+            ...s,
+            icon: SOCIAL_ICON_MAP[s.iconKey] ?? Star,
+          }))
+        );
+      }
+    } catch {
+      setError("Failed to load analytics. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
-  }, [timeRange, dateRange]);
+  }, [timeRange]);
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, [fetchAnalytics]);
+  useEffect(() => { fetchAnalytics(); }, [fetchAnalytics]);
 
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-RW", {
-      style: "currency",
-      currency: "RWF",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+  /* format helpers */
+  const fmtRWF = (n: number) =>
+    new Intl.NumberFormat("en-RW", { style: "currency", currency: "RWF", minimumFractionDigits: 0 }).format(n);
 
-  // Time range handler
-  const setTimeRangeHandler = (range: "7d" | "30d" | "90d") => {
-    const end = new Date();
-    const start = subDays(end, range === "7d" ? 7 : range === "30d" ? 30 : 90);
-    setDateRange({ start, end });
-    setTimeRange(range);
-  };
-
-  // Stats cards with safe data access
+  /* KPI cards — derived from live analytics only */
   const stats = useMemo(() => {
-    if (!analytics) {
-      return [
-        {
-          icon: DollarSign,
-          label: "Total Revenue",
-          value: formatCurrency(4860000),
-          change: "+18.4%",
-          trend: "up" as "up" | "down",
-          period: "30 days",
-        },
-        {
-          icon: ShoppingCart,
-          label: "Total Orders",
-          value: "173",
-          change: "+12.3%",
-          trend: "up" as "up" | "down",
-          period: "30 days",
-        },
-        {
-          icon: TrendingUp,
-          label: "Conversion Rate",
-          value: "7.9%",
-          change: "+1.2%",
-          trend: "up" as "up" | "down",
-          period: "vs last period",
-        },
-        {
-          icon: Users,
-          label: "Unique Customers",
-          value: "1,247",
-          change: "+8.7%",
-          trend: "up" as "up" | "down",
-          period: "30 days",
-        },
-      ];
-    }
-    
+    if (!analytics) return [];
     return [
-      {
-        icon: DollarSign,
-        label: "Total Revenue",
-        value: formatCurrency(analytics.revenue),
-        change: "+18.4%",
-        trend: "up" as "up" | "down",
-        period: "30 days",
-      },
-      {
-        icon: ShoppingCart,
-        label: "Total Orders",
-        value: analytics.orders.toLocaleString(),
-        change: "+12.3%",
-        trend: "up" as "up" | "down",
-        period: "30 days",
-      },
-      {
-        icon: TrendingUp,
-        label: "Conversion Rate",
-        value: `${(analytics.conversionRate * 100).toFixed(1)}%`,
-        change: "+1.2%",
-        trend: "up" as "up" | "down",
-        period: "vs last period",
-      },
-      {
-        icon: Users,
-        label: "Unique Customers",
-        value: analytics.totalCustomers.toLocaleString(),
-        change: "+8.7%",
-        trend: "up" as "up" | "down",
-        period: "30 days",
-      },
+      { icon: DollarSign, label: "Total Revenue",     value: fmtRWF(analytics.revenue),                       change: null, note: `vs last ${timeRange}` },
+      { icon: ShoppingCart, label: "Total Orders",    value: analytics.orders.toLocaleString(),                change: null, note: "Pending fulfillment tracked separately" },
+      { icon: TrendingUp, label: "Conversion Rate",   value: `${(analytics.conversionRate * 100).toFixed(1)}%`, change: null, note: "From product page visits" },
+      { icon: Users, label: "Unique Customers",       value: analytics.totalCustomers.toLocaleString(),        change: null, note: "Across all channels" },
     ];
-  }, [analytics]);
+  }, [analytics, timeRange]);
 
-  const COLORS = ["#6366f1", "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b", "#ef4444"];
+  /* ── shared card style ── */
+  const card: React.CSSProperties = {
+    background: "var(--card)",
+    border: "1px solid var(--border)",
+    boxShadow: "var(--shadow-sm)",
+    borderRadius: "16px",
+    padding: "24px",
+  };
 
-  if (loading && !user) {
-    return (
-      <AppLayout>
-        <div className="flex items-center justify-center min-h-screen p-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-lg font-medium text-gray-700">Loading dashboard...</p>
-          </div>
-        </div>
-      </AppLayout>
-    );
-  }
+  const sectionTitle: React.CSSProperties = {
+    fontFamily: "Playfair Display, serif",
+    fontWeight: 800,
+    fontSize: "1.1rem",
+    color: "var(--foreground)",
+    marginBottom: "4px",
+  };
 
+  const subText: React.CSSProperties = {
+    fontSize: "12px",
+    color: "var(--muted-foreground)",
+    marginBottom: "20px",
+  };
+
+  /* ─────────────────── RENDER ─────────────────── */
   return (
     <AppLayout>
-      <div className="min-h-screen p-4 md:p-6 lg:p-8 space-y-6">
-        {/* Header */}
-        <header className="rounded-2xl p-6 md:p-8 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-white/20 shadow-xl">
+      <div
+        className="min-h-screen p-4 md:p-6 lg:p-8 space-y-6"
+        style={{ background: "var(--bg)", color: "var(--foreground)", fontFamily: "Outfit, sans-serif" }}
+      >
+        {/* ══ HEADER ══ */}
+        <header style={{ ...card, padding: "28px 32px" }}>
           <div className="flex flex-col lg:flex-row gap-6 justify-between items-start lg:items-center">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-                Seller Analytics Dashboard
-              </h1>
-              <p className="text-lg text-gray-600 max-w-md">
-                Monitor your business performance, track revenue growth, and optimize your listings
+              <p style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--link)", fontWeight: 600, marginBottom: "6px" }}>
+                Social Commerce · Seller HQ
               </p>
-              <div className="mt-4 flex gap-3 flex-wrap">
-                <span className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-xl text-sm font-medium text-white border border-white/30">
-                  Welcome back, {user?.name || "Seller"}
-                </span>
-                <span className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl text-sm font-medium text-white border border-white/20">
-                  Role: <span className="capitalize">{user?.role || "seller"}</span>
-                </span>
-                {!isDataLoaded && (
-                  <span className="px-4 py-2 bg-yellow-500/20 text-yellow-100 rounded-xl text-sm font-medium border border-yellow-500/30">
-                    Using demo data
+              <h1 style={{ fontFamily: "Playfair Display, serif", fontWeight: 800, fontSize: "clamp(1.6rem, 4vw, 2.4rem)", color: "var(--foreground)", lineHeight: 1.15 }}>
+                Analytics Dashboard
+              </h1>
+              <p style={{ marginTop: "8px", fontSize: "14px", color: "var(--muted-foreground)", maxWidth: "480px" }}>
+                Monitor revenue, track social-driven conversions, and scale your commerce listings.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {[
+                  userLoading ? "Loading user…" : `Seller: ${user?.name ?? "Unknown"}`,
+                  `Role: ${user?.role ?? "seller"}`,
+                ].map((label) => (
+                  <span
+                    key={label}
+                    className="rounded-full px-3 py-1 text-xs font-medium"
+                    style={{ background: "var(--muted)", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}
+                  >
+                    {label}
                   </span>
-                )}
+                ))}
               </div>
             </div>
-            <div className="flex gap-3 flex-wrap">
+            <div className="flex flex-wrap gap-3">
               <button
+                type="button"
                 onClick={() => navigate("/listings/new")}
-                className="flex items-center gap-2 px-6 py-3 bg-white/90 hover:bg-white backdrop-blur-sm rounded-2xl font-semibold text-gray-900 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/50"
+                className="auth-btn"
+                style={{ width: "auto", padding: "10px 22px", gap: "8px" }}
               >
-                <Zap size={20} />
-                + New Listing
+                <Zap size={16} /> New Listing
               </button>
               <button
+                type="button"
                 onClick={() => navigate("/chat")}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
+                className="auth-social"
+                style={{ width: "auto", padding: "10px 22px" }}
               >
-                Buyer Chats
+                <MessageCircle size={16} /> Buyer Chats
               </button>
             </div>
           </div>
         </header>
 
-        {/* Time Range Filter */}
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-white/50 backdrop-blur-sm rounded-2xl p-6 border border-white/30 shadow-lg">
-          <div className="flex items-center gap-3 text-sm font-semibold text-gray-700">
-            <Calendar size={20} />
-            <span>Analytics Period:</span>
+        {/* ══ ERROR BANNER ══ */}
+        {error && (
+          <div
+            className="flex items-center gap-3"
+            style={{ ...card, background: "color-mix(in oklch, var(--destructive) 10%, var(--card))", borderColor: "color-mix(in oklch, var(--destructive) 30%, transparent)", padding: "14px 20px" }}
+          >
+            <AlertCircle size={16} style={{ color: "var(--destructive)", flexShrink: 0 }} />
+            <p style={{ fontSize: "13px", color: "var(--destructive)" }}>{error}</p>
+            <button
+              onClick={fetchAnalytics}
+              style={{ marginLeft: "auto", fontSize: "12px", fontWeight: 600, color: "var(--destructive)", background: "none", border: "none", cursor: "pointer", fontFamily: "Outfit, sans-serif" }}
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {/* ══ TIME RANGE + REFRESH ══ */}
+        <div
+          className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap"
+          style={{ ...card, padding: "16px 24px" }}
+        >
+          <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+            <Calendar size={16} style={{ color: "var(--link)" }} />
+            Period:
           </div>
           <div className="flex gap-2 flex-wrap">
-            {(["7d", "30d", "90d"] as const).map((range) => (
+            {(["7d", "30d", "90d"] as const).map((r) => (
               <button
-                key={range}
-                onClick={() => setTimeRangeHandler(range)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 shadow-md ${
-                  timeRange === range
-                    ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
-                    : "bg-white/70 hover:bg-white border border-gray-200 hover:shadow-lg hover:border-gray-300"
-                }`}
+                key={r}
+                onClick={() => setTimeRange(r)}
+                style={{
+                  padding: "6px 16px",
+                  borderRadius: "999px",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "all .2s",
+                  background: timeRange === r ? "var(--primary)" : "var(--muted)",
+                  color: timeRange === r ? "var(--primary-foreground)" : "var(--muted-foreground)",
+                  border: `1px solid ${timeRange === r ? "var(--primary)" : "var(--border)"}`,
+                }}
               >
-                {range === "7d" ? "7 Days" : range === "30d" ? "30 Days" : "90 Days"}
+                {r === "7d" ? "7 Days" : r === "30d" ? "30 Days" : "90 Days"}
               </button>
             ))}
           </div>
-          <button 
+          <button
             onClick={fetchAnalytics}
             disabled={loading}
-            className="ml-auto flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="auth-btn"
+            style={{ width: "auto", padding: "8px 20px", marginLeft: "auto", gap: "6px", fontSize: "13px" }}
           >
-            <Download size={16} />
-            {loading ? "Refreshing..." : "Refresh Data"}
+            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+            {loading ? "Refreshing…" : "Refresh"}
           </button>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          {stats.map((stat, index) => (
-            <div
-              key={stat.label}
-              className="group relative rounded-2xl p-6 md:p-8 bg-white/70 backdrop-blur-sm border border-white/40 hover:border-white/60 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-indigo-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <stat.icon size={32} className="text-gray-500 group-hover:text-blue-500 transition-all duration-300 scale-100 group-hover:scale-110" />
-                  <div className={`text-xs md:text-sm px-3 py-1 rounded-full font-semibold shadow-sm ${
-                    stat.trend === "up"
-                      ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                      : "bg-red-100 text-red-800 border border-red-200"
-                  }`}>
-                    {stat.change}
+        {/* ══ LOADING STATE ══ */}
+        {loading && stats.length === 0 && (
+          <div className="flex flex-col items-center py-20" style={{ color: "var(--muted-foreground)" }}>
+            <RefreshCw size={32} className="animate-spin" style={{ marginBottom: "12px", opacity: 0.4 }} />
+            <p style={{ fontWeight: 600 }}>Loading analytics…</p>
+          </div>
+        )}
+
+        {/* ══ KPI CARDS ══ */}
+        {stats.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            {stats.map((s, i) => (
+              <article
+                key={s.label}
+                style={{
+                  ...card,
+                  animation: `cardIn .5s cubic-bezier(.22,1,.36,1) ${i * 80}ms both`,
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: "var(--primary)", borderRadius: "16px 16px 0 0" }} />
+                <div className="flex items-start justify-between mb-3">
+                  <div
+                    style={{
+                      width: 40, height: 40, borderRadius: "10px",
+                      background: "color-mix(in oklch, var(--primary) 15%, transparent)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}
+                  >
+                    <s.icon size={20} style={{ color: "var(--link)" }} />
                   </div>
                 </div>
-                <p className="text-sm md:text-base font-medium text-gray-600 mb-2">{stat.label}</p>
-                <p className="text-3xl md:text-4xl font-black text-gray-900 leading-tight">{stat.value}</p>
-                <p className="mt-2 text-xs md:text-sm text-gray-500 font-medium">{stat.period}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Main Charts Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
-          {/* Revenue Trend */}
-          <section className="xl:col-span-2 2xl:col-span-2 rounded-3xl p-8 bg-white/70 backdrop-blur-sm border border-white/40 shadow-2xl hover:shadow-3xl transition-all duration-300">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Revenue & Orders Trend</h2>
-                <p className="text-gray-600 text-lg">Daily performance overview</p>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-gray-100/50 rounded-xl text-sm font-medium text-gray-700">
-                <Package size={16} />
-                Orders | Revenue
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={420}>
-              <AreaChart data={revenueData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6366f1" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid vertical={false} stroke="rgba(0,0,0,0.05)" strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="date" 
-                  stroke="rgba(0,0,0,0.4)"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={16}
-                  fontSize={12}
-                />
-                <YAxis 
-                  stroke="rgba(0,0,0,0.4)"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={16}
-                  fontSize={12}
-                />
-                <Tooltip 
-                  contentStyle={{
-                    background: "rgba(255,255,255,0.98)",
-                    border: "1px solid rgba(0,0,0,0.1)",
-                    borderRadius: "16px",
-                    backdropFilter: "blur(20px)",
-                    boxShadow: "0 20px 25px -5px rgba(0, 0,0, 0.1)"
-                  }}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#6366f1" 
-                  strokeWidth={4}
-                  fill="url(#revenueGradient)" 
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="orders" 
-                  stroke="#10b981" 
-                  strokeWidth={4}
-                  dot={{ fill: "#10b981", strokeWidth: 3, r: 6 }}
-                  yAxisId={0}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </section>
-
-          {/* Product Performance */}
-          <section className="xl:col-span-1 2xl:col-span-1 rounded-3xl p-8 bg-white/70 backdrop-blur-sm border border-white/40 shadow-2xl hover:shadow-3xl transition-all duration-300">
-            <div className="mb-8">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Top Products</h2>
-              <p className="text-gray-600 text-sm">Sales performance</p>
-            </div>
-            <ResponsiveContainer width="100%" height={380}>
-              <BarChart 
-                data={(productData || []).slice(0, 6)} 
-                layout="vertical"
-                margin={{ top: 20, right: 20, bottom: 20, left: 0 }}
-              >
-                <CartesianGrid stroke="rgba(0,0,0,0.05)" vertical={false} />
-                <XAxis 
-                  type="number" 
-                  stroke="rgba(0,0,0,0.4)"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                />
-                <YAxis 
-                  dataKey="name" 
-                  type="category" 
-                  stroke="rgba(0,0,0,0.4)"
-                  width={140}
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 12 }}
-                />
-                <Tooltip />
-                <Bar 
-                  dataKey="sales" 
-                  fill="#8b5cf6" 
-                  radius={[6, 0, 0, 6]}
-                  barSize={24}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </section>
-
-          {/* Order Pipeline */}
-          <section className="xl:col-span-1 2xl:col-span-1 rounded-3xl p-8 bg-white/70 backdrop-blur-sm border border-white/40 shadow-2xl hover:shadow-3xl transition-all duration-300">
-            <div className="mb-8">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Order Pipeline</h2>
-              <p className="text-gray-600 text-sm">Order status distribution</p>
-            </div>
-            <ResponsiveContainer width="100%" height={380}>
-              <PieChart>
-                <Pie
-                  data={orderPipeline || []}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={90}
-                  innerRadius={60}
-                  paddingAngle={3}
-                  cornerRadius={8}
-                >
-                  {(orderPipeline || []).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend wrapperStyle={{ paddingTop: "20px" }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </section>
-
-          {/* Customer Analytics */}
-          <section className="xl:col-span-2 rounded-3xl p-8 bg-white/70 backdrop-blur-sm border border-white/40 shadow-2xl hover:shadow-3xl transition-all duration-300">
-            <div className="mb-8">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Product Performance Matrix</h2>
-              <p className="text-gray-600 text-sm">Views vs Revenue correlation</p>
-            </div>
-            <ResponsiveContainer width="100%" height={380}>
-              <ScatterChart margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
-                <XAxis 
-                  dataKey="views" 
-                  name="Page Views"
-                  stroke="rgba(0,0,0,0.4)"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={12}
-                />
-                <YAxis 
-                  dataKey="revenue" 
-                  name="Revenue"
-                  stroke="rgba(0,0,0,0.4)"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={12}
-                />
-                <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                <Scatter 
-                  name="Products" 
-                  data={(productData || []).slice(0, 15)} 
-                  fill="#8884d8"
-                >
-                  {(productData || []).slice(0, 15).map((entry, index) => (
-                    <circle
-                      key={`product-${index}`}
-                      cx={entry.views}
-                      cy={entry.revenue}
-                      r={8}
-                      fill={COLORS[index % COLORS.length]}
-                      stroke="#fff"
-                      strokeWidth={3}
-                      className="hover:scale-125 transition-transform duration-200"
-                    />
-                  ))}
-                </Scatter>
-                <ReferenceLine y={0} stroke="rgba(0,0,0,0.2)" strokeDasharray="5 5" />
-              </ScatterChart>
-            </ResponsiveContainer>
-          </section>
-        </div>
-
-        {/* Quick Actions */}
-        <section className="rounded-3xl p-8 bg-gradient-to-r from-emerald-500/5 via-blue-500/5 to-indigo-500/5 border border-white/20 shadow-2xl">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-            Quick Actions
-            <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm font-semibold">Priority</span>
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { label: "Create New Listing", path: "/listings/new", icon: Package, bg: "from-blue-500 to-indigo-500" },
-              { label: "Manage Orders", path: "/orders", icon: ShoppingCart, bg: "from-emerald-500 to-teal-500" },
-              { label: "View Buyer Messages", path: "/chat", icon: Users, bg: "from-purple-500 to-pink-500" },
-              { label: "Edit Store Profile", path: "/account", icon: Users, bg: "from-orange-500 to-red-500" },
-              { label: "Download Reports", path: "/reports", icon: Download, bg: "from-amber-500 to-yellow-500" },
-              { label: "Run Promotions", path: "/promotions", icon: TrendingUp, bg: "from-rose-500 to-fuchsia-500" },
-            ].map((item, index) => (
-              <button
-                key={item.label}
-                onClick={() => navigate(item.path)}
-                className="group relative flex items-center gap-4 p-6 lg:p-8 rounded-2xl bg-white/70 hover:bg-white backdrop-blur-sm border border-white/40 hover:border-white/60 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 overflow-hidden"
-              >
-                <div className={`absolute inset-0 bg-gradient-to-r ${item.bg} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-                <item.icon 
-                  size={28} 
-                  className="text-gray-500 group-hover:text-gray-900 transition-all duration-300 flex-shrink-0 z-10"
-                />
-                <div className="z-10">
-                  <p className="font-bold text-lg text-gray-900">{item.label}</p>
-                  <p className="text-sm text-gray-600 mt-1">Start immediately</p>
-                </div>
-                <ChevronRight 
-                  size={24} 
-                  className="ml-auto text-gray-400 group-hover:text-gray-900 transition-all duration-300 z-10"
-                />
-              </button>
+                <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--muted-foreground)", marginBottom: "4px" }}>
+                  {s.label}
+                </p>
+                <p style={{ fontSize: "1.7rem", fontWeight: 800, color: "var(--foreground)", lineHeight: 1.2 }}>{s.value}</p>
+                <p style={{ marginTop: "6px", fontSize: "12px", color: "var(--muted-foreground)" }}>{s.note}</p>
+              </article>
             ))}
           </div>
-        </section>
+        )}
+
+        {/* ══ MAIN GRID ══ */}
+        {!loading && !error && (
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+            {/* ── LEFT COLUMN (8 cols) ── */}
+            <div className="xl:col-span-8 space-y-6">
+
+              {/* Revenue & Orders chart */}
+              {revenueData.length > 0 && (
+                <section style={card}>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1">
+                    <div>
+                      <h2 style={sectionTitle}>Revenue & Orders Trend</h2>
+                      <p style={subText}>Daily performance · {timeRange === "7d" ? "Past week" : timeRange === "30d" ? "Past 30 days" : "Past quarter"}</p>
+                    </div>
+                    <div className="flex gap-4 text-xs" style={{ color: "var(--muted-foreground)" }}>
+                      <span className="flex items-center gap-1"><span style={{ width: 10, height: 3, background: "var(--primary)", display: "inline-block", borderRadius: 2 }} /> Revenue</span>
+                      <span className="flex items-center gap-1"><span style={{ width: 10, height: 3, background: "var(--chart-2)", display: "inline-block", borderRadius: 2 }} /> Orders</span>
+                    </div>
+                  </div>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="gRev" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="oklch(0.8348 0.1302 160.9080)" stopOpacity={0.4} />
+                          <stop offset="100%" stopColor="oklch(0.8348 0.1302 160.9080)" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="gOrd" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="oklch(0.6231 0.1880 259.8145)" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="oklch(0.6231 0.1880 259.8145)" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="4 4" />
+                      <XAxis dataKey="date" stroke="var(--border)" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} tickLine={false} axisLine={false} tickMargin={12} />
+                      <YAxis stroke="var(--border)" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} tickLine={false} axisLine={false} tickMargin={8} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area type="monotone" dataKey="revenue" name="Revenue" stroke="oklch(0.8348 0.1302 160.9080)" strokeWidth={2.5} fill="url(#gRev)" />
+                      <Area type="monotone" dataKey="orders" name="Orders" stroke="oklch(0.6231 0.1880 259.8145)" strokeWidth={2} fill="url(#gOrd)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </section>
+              )}
+
+              {/* Top Listings */}
+              {topListings.length > 0 && (
+                <section style={card}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 style={sectionTitle}>Top Listing Performance</h2>
+                      <p style={subText}>Views · Saves · Social engagement</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => navigate("/explore")}
+                      className="flex items-center gap-1 text-sm font-semibold"
+                      style={{ color: "var(--link)", background: "none", border: "none", cursor: "pointer" }}
+                    >
+                      View all <ArrowUpRight size={14} />
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {topListings.map((item, i) => (
+                      <div
+                        key={item.name}
+                        style={{
+                          background: "var(--accent)",
+                          border: "1px solid var(--border)",
+                          borderRadius: "12px",
+                          padding: "16px 20px",
+                          animation: `cardIn .5s cubic-bezier(.22,1,.36,1) ${i * 100}ms both`,
+                        }}
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                          <p style={{ fontWeight: 600, fontSize: "14px", color: "var(--foreground)" }}>{item.name}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs rounded-full px-2.5 py-1 font-semibold" style={statusStyle(item.status)}>
+                              {item.status}
+                            </span>
+                            <span
+                              className="text-xs rounded-full px-2.5 py-1 font-semibold flex items-center gap-1"
+                              style={{ background: "color-mix(in oklch, var(--primary) 15%, transparent)", color: "var(--link)" }}
+                            >
+                              <TrendingUp size={10} /> {item.engagement}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          {[
+                            { label: "Views", val: item.views, icon: "👁" },
+                            { label: "Saves", val: item.saves, icon: "❤️" },
+                            { label: "Sales", val: item.sales, icon: "🛒" },
+                          ].map((s) => (
+                            <div key={s.label}>
+                              <p style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>{s.icon} {s.label}</p>
+                              <p style={{ fontSize: "15px", fontWeight: 700, color: "var(--foreground)", marginTop: "2px" }}>{s.val}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Social Influence Signals */}
+              {socialSignals.length > 0 && (
+                <section style={card}>
+                  <h2 style={sectionTitle}>Social Influence Signals</h2>
+                  <p style={subText}>Creator collabs · Live commerce · Virality</p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {socialSignals.map((sig, i) => (
+                      <div
+                        key={sig.label}
+                        style={{
+                          background: "var(--muted)",
+                          border: "1px solid var(--border)",
+                          borderRadius: "12px",
+                          padding: "14px 16px",
+                          animation: `cardIn .5s cubic-bezier(.22,1,.36,1) ${i * 60}ms both`,
+                        }}
+                      >
+                        <sig.icon size={16} style={{ color: "var(--link)", marginBottom: "8px" }} />
+                        <p style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>{sig.label}</p>
+                        <p style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--foreground)", margin: "4px 0 2px" }}>{sig.value}</p>
+                        <p style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>{sig.note}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Product Performance Scatter */}
+              {productData.length > 0 && (
+                <section style={card}>
+                  <h2 style={sectionTitle}>Product Performance Matrix</h2>
+                  <p style={subText}>Views vs Revenue correlation</p>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: 10 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis dataKey="views" name="Page Views" stroke="var(--border)" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} tickLine={false} axisLine={false} />
+                      <YAxis dataKey="revenue" name="Revenue" stroke="var(--border)" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} tickLine={false} axisLine={false} />
+                      <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<CustomTooltip />} />
+                      <Scatter name="Products" data={productData} fill="var(--primary)" />
+                      <ReferenceLine y={0} stroke="var(--border)" strokeDasharray="5 5" />
+                    </ScatterChart>
+                  </ResponsiveContainer>
+                </section>
+              )}
+            </div>
+
+            {/* ── RIGHT SIDEBAR (4 cols) ── */}
+            <aside className="xl:col-span-4 space-y-6">
+
+              {/* Top Products bar chart */}
+              {productData.length > 0 && (
+                <section style={card}>
+                  <h2 style={sectionTitle}>Top Products</h2>
+                  <p style={subText}>Sales volume ranking</p>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <BarChart data={productData.slice(0, 5)} layout="vertical" margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
+                      <CartesianGrid horizontal={false} stroke="var(--border)" strokeDasharray="4 4" />
+                      <XAxis type="number" stroke="var(--border)" tick={{ fill: "var(--muted-foreground)", fontSize: 10 }} tickLine={false} axisLine={false} />
+                      <YAxis dataKey="name" type="category" width={110} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} tickLine={false} axisLine={false} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="sales" name="Sales" fill="oklch(0.8348 0.1302 160.9080)" radius={[0, 6, 6, 0]} barSize={18} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </section>
+              )}
+
+              {/* Order Pipeline */}
+              {orderPipeline.length > 0 && (
+                <section style={card}>
+                  <h2 style={sectionTitle}>Order Pipeline</h2>
+                  <p style={subText}>Status distribution</p>
+                  <ResponsiveContainer width="100%" height={180}>
+                    <PieChart>
+                      <Pie
+                        data={orderPipeline}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={70}
+                        innerRadius={42}
+                        paddingAngle={3}
+                        cornerRadius={6}
+                      >
+                        {orderPipeline.map((entry, i) => (
+                          <Cell key={`cell-${i}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend
+                        iconType="circle"
+                        iconSize={8}
+                        wrapperStyle={{ fontSize: "11px", color: "var(--muted-foreground)", paddingTop: "12px" }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="space-y-2 mt-2">
+                    {orderPipeline.map((step) => (
+                      <div
+                        key={step.name}
+                        className="flex items-center justify-between rounded-lg px-3 py-2"
+                        style={{ background: "var(--accent)", border: "1px solid var(--border)" }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span style={{ width: 8, height: 8, borderRadius: "50%", background: step.color, display: "inline-block" }} />
+                          <span style={{ fontSize: "13px", color: "var(--accent-foreground)" }}>{step.name}</span>
+                        </div>
+                        <span
+                          style={{
+                            fontSize: "12px", fontWeight: 700,
+                            background: "var(--muted)", color: "var(--foreground)",
+                            borderRadius: "999px", padding: "2px 10px",
+                          }}
+                        >
+                          {step.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Quick Actions */}
+              <section style={card}>
+                <h2 style={sectionTitle}>Quick Actions</h2>
+                <p style={subText}>Jump to key workflows</p>
+                <div className="space-y-2">
+                  {[
+                    { label: "Create campaign listing", path: "/listings/new", icon: Package },
+                    { label: "Reply to buyer messages", path: "/chat", icon: MessageCircle },
+                    { label: "Manage orders", path: "/orders", icon: ShoppingCart },
+                    { label: "Edit seller profile", path: "/account", icon: Users },
+                    { label: "Download reports", path: "/reports", icon: Download },
+                    { label: "Run promotions", path: "/promotions", icon: Flame },
+                  ].map((action) => (
+                    <button
+                      key={action.label}
+                      type="button"
+                      onClick={() => navigate(action.path)}
+                      className="w-full text-left rounded-xl flex items-center gap-3 transition-all"
+                      style={{
+                        background: "var(--muted)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                        padding: "10px 14px",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        cursor: "pointer",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = "var(--ring)";
+                        e.currentTarget.style.background = "var(--accent)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = "var(--border)";
+                        e.currentTarget.style.background = "var(--muted)";
+                      }}
+                    >
+                      <action.icon size={15} style={{ color: "var(--link)", flexShrink: 0 }} />
+                      <span style={{ flex: 1 }}>{action.label}</span>
+                      <ChevronRight size={14} style={{ color: "var(--muted-foreground)" }} />
+                    </button>
+                  ))}
+                </div>
+              </section>
+            </aside>
+          </div>
+        )}
       </div>
     </AppLayout>
   );
