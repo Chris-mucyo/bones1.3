@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import AppLayout from "../../../shared/layouts/AppLayout";
 import {
   Search,
@@ -12,12 +11,10 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
-  ArrowUpRight,
   Download,
   RefreshCw,
   Eye,
   MessageCircle,
-  MoreHorizontal,
   MapPin,
   Calendar,
   ShoppingBag,
@@ -288,7 +285,7 @@ function OrderDrawer({
    MAIN PAGE
 ═══════════════════════════════════════════════════════════ */
 export default function SellerOrdersPage() {
-  const navigate = useNavigate();
+  
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
