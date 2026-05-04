@@ -24,7 +24,7 @@ import { Public } from '../common/decorators/public.decorator.js';
 @Controller('auth')
 @UseGuards(JwtAuthGuard)
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   // ─── Local auth ──────────────────────────────────────────────────
 
@@ -61,9 +61,8 @@ export class AuthController {
     return this.authService.sendVerificationEmail(dto.email);
   }
 
-  
   @Public()
-  @Get('verify-email')  
+  @Get('verify-email')
   @HttpCode(HttpStatus.OK)
   verifyEmail(@Query('token') token: string) {
     return this.authService.verifyEmail(token);
@@ -107,7 +106,4 @@ export class AuthController {
   validate(@Request() req: any) {
     return this.authService.validateToken(req.user.id);
   }
-
-
-
 }

@@ -1,4 +1,12 @@
-import { IsEmail, IsNotEmpty, IsNumber, IsBoolean, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsBoolean,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class LoginDto {
@@ -11,7 +19,7 @@ export class LoginDto {
   @IsString()
   password: string;
 
-  @IsOptional() 
+  @IsOptional()
   @IsBoolean()
   rememberMe?: boolean;
 }
@@ -51,4 +59,3 @@ export class VerifyEmailDto {
   @IsString()
   token: string;
 }
-

@@ -28,7 +28,7 @@ export class UpdateUserDto {
   @IsString()
   avatarUrl?: string;
 
-  @ApiProperty({ example: 'John Doe\'s Shop' })
+  @ApiProperty({ example: "John Doe's Shop" })
   @IsOptional()
   @IsString()
   shopName?: string;

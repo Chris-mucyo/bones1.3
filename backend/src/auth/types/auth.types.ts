@@ -1,17 +1,16 @@
 import { Request } from 'express';
 import { Role } from '../../../generated/prisma/enums';
 
-
 export interface UserProfile {
-    id: number;
-    email: string;
-    fullName: string;
-    avatarUrl?: string;
-    shopname?: string;
-    bio?: string;
-    role: Role;
-    phoneNumber?: string;
-    isActive: boolean;
+  id: number;
+  email: string;
+  fullName: string;
+  avatarUrl?: string;
+  shopname?: string;
+  bio?: string;
+  role: Role;
+  phoneNumber?: string;
+  isActive: boolean;
 }
 
 export interface JwtPayload {

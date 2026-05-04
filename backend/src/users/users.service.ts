@@ -37,7 +37,7 @@ const SAFE_USER_SELECT = {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateUserDto) {
     const existing = await this.prisma.user.findUnique({
@@ -61,10 +61,8 @@ export class UsersService {
       );
     }
 
-
     const verificationToken = this.generateToken();
     const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
 
     const passwordHash = await hash(dto.password, SALT_ROUNDS);
 
@@ -108,8 +106,7 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email }, });
-
+    return this.prisma.user.findUnique({ where: { email } });
   }
 
   async findByUsername(username: string) {
@@ -241,12 +238,12 @@ export class UsersService {
       where: { id },
       data: {
         emailVerificationToken: token,
-        emailVerificationTokenExpiry: expiry
+        emailVerificationTokenExpiry: expiry,
       },
     });
   }
 
-    async verifyEmail(token: string) {
+  async verifyEmail(token: string) {
     const user = await this.prisma.user.findFirst({
       where: {
         emailVerificationToken: token,
@@ -260,7 +257,7 @@ export class UsersService {
 
     return this.prisma.user.update({
       where: { id: user.id },
-      data: { 
+      data: {
         isEmailVerified: true,
         emailVerificationToken: null,
         emailVerificationTokenExpiry: null,
@@ -269,4 +266,3 @@ export class UsersService {
     });
   }
 }
-

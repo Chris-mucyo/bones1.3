@@ -34,7 +34,7 @@ import { MailModule } from '../mail/mail.module.js';
         return {
           secret,
           signOptions: {
-            expiresIn, 
+            expiresIn,
           },
         };
       },
@@ -44,4 +44,4 @@ import { MailModule } from '../mail/mail.module.js';
   providers: [AuthService, JwtStrategy, GoogleStrategy, JwtAuthGuard],
   exports: [AuthService, JwtAuthGuard],
 })
-export class AuthModule { }
+export class AuthModule {}

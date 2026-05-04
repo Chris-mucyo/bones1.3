@@ -41,7 +41,7 @@ export class CreateUserDto {
   phoneNumber?: string;
 
   // Seller / Wholesaler fields
-  @ApiProperty({ example: 'John Doe\'s Shop' })
+  @ApiProperty({ example: "John Doe's Shop" })
   @IsOptional()
   @IsString()
   shopName?: string;

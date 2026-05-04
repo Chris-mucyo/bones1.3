@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD, APP_FILTER, APP_PIPE } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { MailModule } from './mail/mail.module.js';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from './auth/guards/role.guard.js';
+import { ListingModule } from './listing/listing.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { RolesGuard } from './auth/guards/role.guard.js';
     UsersModule,
     AuthModule,
     MailModule,
+    ListingModule,
   ],
   controllers: [AppController],
   providers: [
@@ -39,9 +41,9 @@ import { RolesGuard } from './auth/guards/role.guard.js';
     {
       provide: APP_PIPE,
       useValue: new ValidationPipe({
-        whitelist: true,       // strip unknown fields
+        whitelist: true, // strip unknown fields
         forbidNonWhitelisted: true,
-        transform: true,       // auto-transform types (string → number etc.)
+        transform: true, // auto-transform types (string → number etc.)
       }),
     },
   ],
