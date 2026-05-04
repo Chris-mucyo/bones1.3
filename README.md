@@ -24,15 +24,6 @@ A full-stack e-commerce platform designed to connect buyers and sellers with a m
 ### 🛍️ Product Listings
 ![Products](./screenshots/products.png)
 
-### 📦 Product Details
-![Product Details](./screenshots/product-details.png)
-
-### 🛒 Cart Page
-![Cart](./screenshots/cart.png)
-
-### 📊 Seller Dashboard
-![Dashboard](./screenshots/dashboard.png)
-
 ### 🔐 Authentication
 ![Login](./screenshots/login.png)
 
@@ -65,7 +56,7 @@ shophub/
 ├── frontend/        
 ├── backend/         
 ├── prisma/          
-├── screenshots/     # Add your images here
+├── screenshots/     
 └── README.md
 ```
 
@@ -75,7 +66,7 @@ shophub/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/shophub.git
+git clone https://github.com/Chris-mucyo/shophub.git
 cd shophub
 ```
 
@@ -167,7 +158,7 @@ MIT License
 
 **Mucyo Chris**  
 GitHub: https://github.com/Chris-mucyo  
-Portfolio: https://chris-portofolio.vercel.app  
+ 
 
 ---
 
