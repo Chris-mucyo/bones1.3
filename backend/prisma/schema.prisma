@@ -8,39 +8,46 @@ datasource db {
 }
 
 model User {
-  id                Int       @id @default(autoincrement())
-  fullName          String
-  email             String    @unique
-  role              Role
-  shopName          String?
-  nationalId        String?
-  shopDescription   String?
-  shopAddress       String?
-  productTypes      String[]
-  experience        String?
-  interests         String[]
-  shoppingFrequency String?
-  budget            String?
-  resetToken        String?
-  resetTokenExpiry  DateTime?
-  provider          Provider  @default(LOCAL)
-  providerId        String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  avatarUrl         String?
-  bio               String?
-  isActive          Boolean   @default(false)
-  passwordHash      String?
-  phoneNumber       String?
-  refreshToken      String?   @map("refresh_token")
-  isEmailVerified           Boolean  @default(false)
-  emailVerificationToken    String?  @unique
+  id                           Int       @id @default(autoincrement())
+  fullName                     String
+  email                        String    @unique
+  role                         Role
+  shopName                     String?
+  nationalId                   String?
+  shopDescription              String?
+  shopAddress                  String?
+  productTypes                 String[]
+  experience                   String?
+  interests                    String[]
+  shoppingFrequency            String?
+  budget                       String?
+  resetToken                   String?
+  resetTokenExpiry             DateTime?
+  provider                     Provider  @default(LOCAL)
+  providerId                   String?
+  createdAt                    DateTime  @default(now())
+  updatedAt                    DateTime  @updatedAt
+  avatarUrl                    String?
+  bio                          String?
+  isActive                     Boolean   @default(false)
+  passwordHash                 String?
+  phoneNumber                  String?
+  refreshToken                 String?   @map("refresh_token")
+  isEmailVerified              Boolean   @default(false)
+  emailVerificationToken       String?   @unique
   emailVerificationTokenExpiry DateTime?
-
-  @@index([provider, providerId])
 
   products Product[]
   listings Listing[]
+
+  conversationsAsUserA Conversation[] @relation("convUserA")
+  conversationsAsUserB Conversation[] @relation("convUserB")
+
+
+  sentMessages     Message[] @relation("MsgSender")
+  receivedMessages Message[] @relation("MsgReceiver")
+
+  @@index([provider, providerId])
 }
 
 enum Role {
@@ -55,73 +62,110 @@ enum Provider {
   GOOGLE
 }
 
-
 model Listing {
-  id          Int       @id @default(autoincrement())
-  caption     String?   @db.Text
-  description String?   @db.Text
+  id          Int     @id @default(autoincrement())
+  caption     String? @db.Text
+  description String? @db.Text
 
-  media       String[]  
+  media String[]
 
+  products Product[] @relation("ListingProducts")
 
-  products    Product[] @relation("ListingProducts")
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  
-  userId      Int
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likesCount    Int @default(0)
+  commentsCount Int @default(0)
+  viewsCount    Int @default(0)
 
-  
-  likesCount    Int      @default(0)
-  commentsCount Int      @default(0)
-  viewsCount    Int      @default(0)
+  isActive Boolean @default(true)
 
-  
-  isActive    Boolean  @default(true)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([createdAt])
 }
 
-
 model Product {
-  id          Int      @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   name        String
-  slug        String   @unique
-  description String?  @db.Text
+  slug        String  @unique
+  description String? @db.Text
 
-  price       Decimal  @db.Decimal(10, 2)
-  currency    String   @default("RWF")
+  price    Decimal @db.Decimal(10, 2)
+  currency String  @default("RWF")
 
-  stock       Int      @default(0)
-  sku         String?  @unique
+  stock Int     @default(0)
+  sku   String? @unique
 
-  category    String?
-  brand       String?
+  category String?
+  brand    String?
 
-  images      String[]
+  images String[]
 
-  isActive    Boolean  @default(true)
-  featured    Boolean  @default(false)
+  isActive Boolean @default(true)
+  featured Boolean @default(false)
 
-  
-  userId      Int
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  
-  listings    Listing[] @relation("ListingProducts")
+  listings Listing[] @relation("ListingProducts")
 
-  
-  viewsCount  Int      @default(0)
-  salesCount  Int      @default(0)
+  viewsCount Int @default(0)
+  salesCount Int @default(0)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([name])
   @@index([category])
   @@index([createdAt])
+}
+
+model Conversation {
+  id           String    @id @default(cuid())
+  participants String[]
+  messages     Message[]
+  unread       Int       @default(0)
+  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime  @default(now())
+
+  userA    Int
+  userB    Int
+  userARel User @relation("convUserA", fields: [userA], references: [id], onDelete: Cascade)
+  userBRel User @relation("convUserB", fields: [userB], references: [id], onDelete: Cascade)
+
+  @@unique([userA, userB])
+  @@index([userA])
+  @@index([userB])
+  @@index([updatedAt])
+}
+
+model Message {
+  id             String      @id @default(cuid())
+  content        String      @db.Text
+  type           MessageType @default(text)
+  read           Boolean     @default(false)
+  senderId       Int
+  receiverId     Int
+  conversationId String
+
+  sender       User         @relation("MsgSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver     User         @relation("MsgReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+enum MessageType {
+  text
+  image
+  file
 }

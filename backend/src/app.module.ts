@@ -11,6 +11,8 @@ import { MailModule } from './mail/mail.module.js';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from './auth/guards/role.guard.js';
 import { ListingModule } from './listing/listing.module';
+import { ChatController } from './chat/chat.controller';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -23,8 +25,9 @@ import { ListingModule } from './listing/listing.module';
     AuthModule,
     MailModule,
     ListingModule,
+    ChatModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, ChatController],
   providers: [
     AppService,
     // Apply JWT guard globally — use @Public() to opt out
