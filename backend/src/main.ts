@@ -3,7 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filters.js';
-
+import { IoAdapter } from '@nestjs/platform-socket.io';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -27,6 +27,9 @@ async function bootstrap() {
 
   // Global prefix
   app.setGlobalPrefix('api/v1');
+
+  //socket io
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   // ========== SWAGGER SETUP ==========
   const config = new DocumentBuilder()
