@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated"
 }
 
 datasource db {
@@ -42,7 +42,6 @@ model User {
 
   conversationsAsUserA Conversation[] @relation("convUserA")
   conversationsAsUserB Conversation[] @relation("convUserB")
-
 
   sentMessages     Message[] @relation("MsgSender")
   receivedMessages Message[] @relation("MsgReceiver")
